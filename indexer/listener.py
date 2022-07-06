@@ -36,3 +36,5 @@ class Listener:
                 )
                 self.verified_db[key] = str(decoded.token_id.id)
                 print("- [data_update]", key, "->", decoded.token_id.id)
+            else:
+                print("error: event", event.name, "not supported")

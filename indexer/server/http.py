@@ -10,7 +10,7 @@ class WebServer:
     async def fetch_tokens(self, request):
         try:
             addr = request.rel_url.query["address"]
-            return web.json_response({"tokens": str(self.owners_db[addr])})
+            return web.json_response({"tokens": self.owners_db[addr]})
         except Exception:
             return web.json_response({"tokens": []})
 
@@ -22,7 +22,7 @@ class WebServer:
             key = str(type) + ":" + str(data) + ":" + str(verifier)
             return web.json_response({"token_id": str(self.verified_db[key])})
         except Exception:
-            return web.json_response({"error": "no proof found"})
+            return web.json_response({"error": "no token found"})
 
     def build_app(self):
         app = web.Application()

@@ -30,7 +30,7 @@ async def main():
                 name="VerifiedData", address=conf.contract_address
             ),
         ],
-        index_from_block=260_437,
+        index_from_block=260_000,
     )
 
     await runner.run()
