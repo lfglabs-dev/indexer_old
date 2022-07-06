@@ -2,7 +2,7 @@
 port = 8080
 
 [contract]
-address = "0x064dfcb0d23d57fa0bc0d4b40a3e55f21534fe39acbe8e44561fa0c1a27a6e72"
+address = "0x033233531959c1da39c28daf337e25e2deadda80ce988290306ffabcd735ccbd"
 
 [apibara]
 indexer_id = "starknet-id"

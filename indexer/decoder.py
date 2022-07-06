@@ -25,6 +25,14 @@ class TransferEvent:
     token_id: TokenId
 
 
+@dataclass
+class VerifiedDataEvent:
+    token_id: TokenId
+    type: int
+    data: int
+    verifier: int
+
+
 class ERC721Contract:
     def __init__(self, rpc, address) -> None:
         self._rpc = rpc
@@ -81,6 +89,18 @@ def decode_transfer_event(data: List[bytes]) -> TransferEvent:
         return TransferEvent(from_, to, token_id)
     else:
         return None
+
+
+def decode_verified_data(data_input: List[bytes]) -> VerifiedDataEvent:
+    data_iter = iter(data_input)
+    token_id = _uint256_from_iter(data_iter)
+    token_id = Uint256TokenId(token_id)
+
+    type = _felt_from_iter(data_iter)
+    data = _felt_from_iter(data_iter)
+    verifier = _felt_from_iter(data_iter)
+
+    return VerifiedDataEvent(token_id, type, data, verifier)
 
 
 def hex_to_bytes(s: str) -> bytes:
