@@ -7,7 +7,11 @@ class WebServer:
         self.database = database
 
     async def fetch_tokens(self, request):
-        return web.json_response({"tokens": []})
+        try:
+            addr = request.rel_url.query["address"]
+            return web.json_response({"tokens": str(self.database[addr])})
+        except Exception:
+            return web.json_response({"tokens": []})
 
     def build_app(self):
         app = web.Application()
