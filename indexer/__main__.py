@@ -1,7 +1,9 @@
 import asyncio
+from distutils.command.config import config
 from listener import Listener
 from server.http import WebServer
 from apibara import IndexerRunner
+from apibara.indexer.runner import IndexerRunnerConfiguration
 from apibara.model import EventFilter
 from aiohttp import web
 from config import TomlConfig
@@ -10,18 +12,24 @@ import os
 
 
 async def main():
+    print("Starting indexer...")
     conf = TomlConfig("config.toml", "config.template.toml")
     owners_db = shelve.open(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), "owners.shelf")
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "../data/owners.shelf"
+        )
     )
     verified_db = shelve.open(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), "verified.shelf")
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "../data/verified.shelf"
+        )
     )
     events_manager = Listener(owners_db, verified_db)
     asyncio.create_task(start_server(conf, owners_db, verified_db))
     runner = IndexerRunner(
         indexer_id=conf.indexer_id,
         new_events_handler=events_manager.handle_events,
+        config=IndexerRunnerConfiguration(apibara_url="apibara:7171"),
     )
     runner.create_if_not_exists(
         filters=[

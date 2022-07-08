@@ -10,11 +10,13 @@ class WebServer:
     async def fetch_tokens(self, request):
         try:
             addr = request.rel_url.query["address"]
+            print("Fetching tokens for addr:", addr)
             return web.json_response({"tokens": self.owners_db[addr]})
         except Exception:
             return web.json_response({"tokens": []})
 
     async def fetch_token_id(self, request):
+        print("Fetching token id")
         try:
             type = request.rel_url.query["type"]
             data = request.rel_url.query["data"]
