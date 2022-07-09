@@ -28,8 +28,10 @@ class WebServer:
 
     def build_app(self):
         app = web.Application()
-        app.add_routes([web.get("/fetch_tokens", self.fetch_tokens)])
-        app.add_routes([web.get("/fetch_token_id", self.fetch_token_id)])
+        app.router.add_route("GET", "/fetch_tokens", self.fetch_tokens)
+        app.router.add_route("GET", "/fetch_tokens_id", self.fetch_token_id)
+
+        # Enable CORS for all origins
         cors = aiohttp_cors.setup(
             app,
             defaults={
@@ -40,6 +42,9 @@ class WebServer:
                 )
             },
         )
+
+        # Configure CORS on all routes
         for route in list(app.router.routes()):
             cors.add(route)
+
         return app
