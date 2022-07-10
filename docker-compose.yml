@@ -10,7 +10,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./mongo_data:/data/db
+      - /etc/starknet-id-indexer/mongo_volume:/data/db
 
   apibara:
     image: apibara/apibara:0.1.2

@@ -1,4 +1,4 @@
-git+https://github.com/apibara/python-sdk.git@main#egg=apibara
+git+https://github.com/apibara/python-sdk.git@727924ef1472d2a5dd417b708471a40b2f37838f#egg=apibara
 black
 aiohttp
 aiohttp_cors
