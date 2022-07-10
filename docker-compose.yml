@@ -34,4 +34,4 @@ services:
     links:
       - apibara
     volumes:
-      - ./indexer_data:/indexer/data
+      - /etc/starknet-id-indexer/indexer_volume:/indexer/data
