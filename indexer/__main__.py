@@ -2,6 +2,7 @@ import asyncio
 from listener import Listener
 from server.http import WebServer
 from apibara import IndexerRunner
+from apibara.indexer.runner import IndexerRunnerConfiguration
 from apibara.model import EventFilter
 from aiohttp import web
 from config import TomlConfig
@@ -20,6 +21,9 @@ async def main():
     events_manager = Listener(owners_db, verified_db)
     asyncio.create_task(start_server(conf, owners_db, verified_db))
     runner = IndexerRunner(
+        config=IndexerRunnerConfiguration(
+            storage_url="mongodb://apibara:apibara@localhost:27017"
+        ),
         indexer_id=conf.indexer_id,
         new_events_handler=events_manager.handle_events,
     )
