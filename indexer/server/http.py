@@ -14,7 +14,7 @@ class WebServer:
         except Exception:
             return web.json_response({"tokens": []})
 
-    async def fetch_token_id(self, request):
+    async def reverse_lookup(self, request):
         try:
             type = request.rel_url.query["type"]
             data = request.rel_url.query["data"]
@@ -24,10 +24,25 @@ class WebServer:
         except Exception:
             return web.json_response({"error": "no token found"})
 
+    async def uri(self, request):
+        try:
+            id = request.rel_url.query["id"]
+            return web.json_response(
+                {
+                    "name": f"Starknet ID: {id}",
+                    "description": "This token represents an identity on StarkNet that can be linked to external services.",
+                    "image": f"https://robohash.org/{id}",
+                }
+            )
+        except Exception:
+            return web.json_response({"error": "no id specified"})
+
     def build_app(self):
         app = web.Application()
         app.add_routes([web.get("/fetch_tokens", self.fetch_tokens)])
-        app.add_routes([web.get("/fetch_token_id", self.fetch_token_id)])
+        app.add_routes([web.get("/reverse_lookup", self.reverse_lookup)])
+        app.add_routes([web.get("/uri", self.uri)])
+
         cors = aiohttp_cors.setup(
             app,
             defaults={

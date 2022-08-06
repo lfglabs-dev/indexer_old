@@ -27,6 +27,7 @@ class TomlConfig(Config):
 
         server = config["server"]
         self.server_port = server["port"]
+        self.docker = server["docker"]
 
         contract = config["contract"]
         self.contract_address = contract["address"]

@@ -1,5 +1,5 @@
 from apibara import NewEvents, Info
-from decoder import decode_transfer_event, decode_verified_data
+from decoder import decode_transfer_event, decode_verifier_data
 
 
 class Listener:
@@ -26,7 +26,7 @@ class Listener:
                 self.owners_db[target] = target_ids
                 print("- [transfer]", token_id, source, "->", target)
             elif event.name == "VerifiedData":
-                decoded = decode_verified_data(event.data)
+                decoded = decode_verifier_data(event.data)
                 key = (
                     str(decoded.type)
                     + ":"

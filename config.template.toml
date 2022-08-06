@@ -1,5 +1,6 @@
 [server]
-port = 8080
+port = 8082
+docker = false
 
 [contract]
 address = "0x033233531959c1da39c28daf337e25e2deadda80ce988290306ffabcd735ccbd"

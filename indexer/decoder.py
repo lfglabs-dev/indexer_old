@@ -26,11 +26,18 @@ class TransferEvent:
 
 
 @dataclass
-class VerifiedDataEvent:
+class VerifierDataUpdate:
     token_id: TokenId
-    type: int
+    field: int
     data: int
     verifier: int
+
+
+@dataclass
+class UserDataUpdate:
+    token_id: TokenId
+    field: int
+    data: int
 
 
 class ERC721Contract:
@@ -91,16 +98,16 @@ def decode_transfer_event(data: List[bytes]) -> TransferEvent:
         return None
 
 
-def decode_verified_data(data_input: List[bytes]) -> VerifiedDataEvent:
+def decode_verifier_data(data_input: List[bytes]) -> VerifierDataUpdate:
     data_iter = iter(data_input)
     token_id = _uint256_from_iter(data_iter)
     token_id = Uint256TokenId(token_id)
 
-    type = _felt_from_iter(data_iter)
+    field = _felt_from_iter(data_iter)
     data = _felt_from_iter(data_iter)
     verifier = _felt_from_iter(data_iter)
 
-    return VerifiedDataEvent(token_id, type, data, verifier)
+    return VerifierDataUpdate(token_id, field, data, verifier)
 
 
 def hex_to_bytes(s: str) -> bytes:
