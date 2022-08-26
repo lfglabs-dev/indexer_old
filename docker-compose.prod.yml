@@ -9,6 +9,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: apibara
     ports:
       - 27017:27017
+    volumes:
+      - /etc/starknet-id-indexer/mongo_volume:/data/db
 
   apibara:
     image: apibara/apibara:0.3.1
@@ -22,3 +24,14 @@ services:
       - ./configuration.toml:/usr/etc/apibara/configuration.toml
     links:
       - mongo
+
+  indexer:
+    build: .
+    command: python -u indexer
+    restart: always
+    ports:
+      - 8082:8082
+    links:
+      - apibara
+    volumes:
+      - /etc/starknet-id-indexer/indexer_volume:/indexer/data

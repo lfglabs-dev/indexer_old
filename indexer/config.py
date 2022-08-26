@@ -30,7 +30,8 @@ class TomlConfig(Config):
         self.docker = server["docker"]
 
         contract = config["contract"]
-        self.contract_address = contract["address"]
+        self.starknetid_contract = contract["starknetid"]
+        self.naming_contract = contract["naming"]
 
         apibara = config["apibara"]
         self.indexer_id = apibara["indexer_id"]

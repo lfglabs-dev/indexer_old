@@ -3,7 +3,8 @@ port = 8082
 docker = false
 
 [contract]
-address = "0x033233531959c1da39c28daf337e25e2deadda80ce988290306ffabcd735ccbd"
+starknetid = "0x033233531959c1da39c28daf337e25e2deadda80ce988290306ffabcd735ccbd"
+naming = "0x04a018022c8c3a141a90fc7cc051998fef678e6e71d55c99ee34dbb9d4821504"
 
 [apibara]
 indexer_id = "starknet-id"

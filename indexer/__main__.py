@@ -23,6 +23,24 @@ async def main():
                 os.path.dirname(os.path.realpath(__file__)), "../data/verified.shelf"
             )
         )
+        domain_to_addr_db = shelve.open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "../data/domain_to_addr_db.shelf",
+            )
+        )
+        addr_to_domain_db = shelve.open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "../data/addr_to_domain_db.shelf",
+            )
+        )
+        tokenid_to_domain_db = shelve.open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "../data/tokenid_to_domain.shelf",
+            )
+        )
     else:
         owners_db = shelve.open(
             os.path.join(os.path.dirname(os.path.realpath(__file__)), "owners.shelf")
@@ -30,8 +48,38 @@ async def main():
         verified_db = shelve.open(
             os.path.join(os.path.dirname(os.path.realpath(__file__)), "verified.shelf")
         )
-    events_manager = Listener(owners_db, verified_db)
-    asyncio.create_task(start_server(conf, owners_db, verified_db))
+        domain_to_addr_db = shelve.open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "domain_to_addr_db.shelf"
+            )
+        )
+        addr_to_domain_db = shelve.open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "addr_to_domain_db.shelf"
+            )
+        )
+        tokenid_to_domain_db = shelve.open(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "tokenid_to_domain.shelf"
+            )
+        )
+    events_manager = Listener(
+        owners_db,
+        verified_db,
+        domain_to_addr_db,
+        addr_to_domain_db,
+        tokenid_to_domain_db,
+    )
+    asyncio.create_task(
+        start_server(
+            conf,
+            owners_db,
+            verified_db,
+            domain_to_addr_db,
+            addr_to_domain_db,
+            tokenid_to_domain_db,
+        )
+    )
     if conf.docker:
         runner = IndexerRunner(
             config=IndexerRunnerConfiguration(
@@ -53,19 +101,46 @@ async def main():
         )
     runner.create_if_not_exists(
         filters=[
-            EventFilter.from_event_name(name="Transfer", address=conf.contract_address),
             EventFilter.from_event_name(
-                name="VerifiedData", address=conf.contract_address
+                name="Transfer", address=conf.starknetid_contract
+            ),
+            EventFilter.from_event_name(
+                name="VerifiedData", address=conf.starknetid_contract
+            ),
+            EventFilter.from_event_name(
+                name="domain_to_addr_update", address=conf.naming_contract
+            ),
+            EventFilter.from_event_name(
+                name="addr_to_domain_update", address=conf.naming_contract
+            ),
+            EventFilter.from_event_name(
+                name="starknet_id_update", address=conf.naming_contract
+            ),
+            EventFilter.from_event_name(
+                name="reset_subdomains_update", address=conf.naming_contract
             ),
         ],
-        index_from_block=260_000,
+        index_from_block=311_074,  # 260_000
     )
 
     await runner.run()
 
 
-async def start_server(conf, owners_db, verified_db):
-    app = WebServer(owners_db, verified_db).build_app()
+async def start_server(
+    conf,
+    owners_db,
+    verified_db,
+    domain_to_addr_db,
+    addr_to_domain_db,
+    tokenid_to_domain_db,
+):
+    app = WebServer(
+        owners_db,
+        verified_db,
+        domain_to_addr_db,
+        addr_to_domain_db,
+        tokenid_to_domain_db,
+    ).build_app()
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, port=conf.server_port).start()

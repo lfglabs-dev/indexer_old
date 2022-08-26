@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import string
 from typing import Iterator, List, Tuple
 
 
@@ -38,6 +39,25 @@ class UserDataUpdate:
     token_id: TokenId
     field: int
     data: int
+
+
+@dataclass
+class DomainToAddrUpdate:
+    domain: string
+    address: int
+
+
+@dataclass
+class AddrToDomainUpdate:
+    address: int
+    domain: string
+
+
+@dataclass
+class StarknetIdUpdate:
+    domain: string
+    owner: TokenId
+    expiry: int
 
 
 class ERC721Contract:
@@ -108,6 +128,68 @@ def decode_verifier_data(data_input: List[bytes]) -> VerifierDataUpdate:
     verifier = _felt_from_iter(data_iter)
 
     return VerifierDataUpdate(token_id, field, data, verifier)
+
+
+def decode_felt_to_domain_string(felt):
+    basicAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789-"
+    bigAlphabet = "这来"
+    decoded = ""
+    while felt != 0:
+        code = felt % len(basicAlphabet)
+        felt = felt // (len(basicAlphabet))
+        if code == len(basicAlphabet) - 1:
+            code2 = felt % len(bigAlphabet)
+            decoded += basicAlphabet[code2]
+            felt = felt // len(bigAlphabet)
+        else:
+            decoded += basicAlphabet[code]
+    return decoded
+
+
+# func domain_to_addr_update(domain_len : felt, domain : felt*, address : felt):
+def decode_domain_to_addr_data(data_input: List[bytes]) -> DomainToAddrUpdate:
+    data_iter = iter(data_input)
+
+    arr_len = _felt_from_iter(data_iter)
+    domain = ""
+    for _ in range(arr_len):
+        value = _felt_from_iter(data_iter)
+        domain += decode_felt_to_domain_string(value) + "."
+    domain += "stark"
+    address = _felt_from_iter(data_iter)
+
+    return DomainToAddrUpdate(domain, address)
+
+
+def decode_addr_to_domain_data(data_input: List[bytes]) -> DomainToAddrUpdate:
+    data_iter = iter(data_input)
+
+    address = _felt_from_iter(data_iter)
+
+    arr_len = _felt_from_iter(data_iter)
+    domain = ""
+    for _ in range(arr_len):
+        value = _felt_from_iter(data_iter)
+        domain += decode_felt_to_domain_string(value) + "."
+    domain += "stark"
+
+    return DomainToAddrUpdate(address, domain)
+
+
+def decode_starknet_id_update(data_input: List[bytes]) -> StarknetIdUpdate:
+    data_iter = iter(data_input)
+
+    arr_len = _felt_from_iter(data_iter)
+    domain = ""
+    for _ in range(arr_len):
+        value = _felt_from_iter(data_iter)
+        domain += decode_felt_to_domain_string(value) + "."
+    domain += "stark"
+    owner = _uint256_from_iter(data_iter)
+    owner = Uint256TokenId(owner)
+    expiry = _felt_from_iter(data_iter)
+
+    return StarknetIdUpdate(domain, owner, expiry)
 
 
 def hex_to_bytes(s: str) -> bytes:
