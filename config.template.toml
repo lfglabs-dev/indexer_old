@@ -1,6 +1,6 @@
 [server]
 port = 8082
-docker = false
+docker = true
 
 [contract]
 starknetid = "0x033233531959c1da39c28daf337e25e2deadda80ce988290306ffabcd735ccbd"

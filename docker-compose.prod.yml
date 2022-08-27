@@ -10,7 +10,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - /etc/starknet-id-indexer/mongo_volume:/data/db
+      - ./_docker/apibara_mongodb:/data/db
 
   apibara:
     image: apibara/apibara:0.3.1
@@ -32,6 +32,7 @@ services:
     ports:
       - 8082:8082
     links:
+      - mongo
       - apibara
     volumes:
-      - /etc/starknet-id-indexer/indexer_volume:/indexer/data
+      - ./_docker/starknet-id-indexer:/indexer/data

@@ -84,7 +84,7 @@ async def main():
         runner = IndexerRunner(
             config=IndexerRunnerConfiguration(
                 apibara_url="apibara:7171",
-                storage_url="mongodb://apibara:apibara@localhost:27017",
+                storage_url="mongodb://apibara:apibara@mongo:27017",
             ),
             network_name="starknet-goerli",
             indexer_id=conf.indexer_id,
@@ -120,7 +120,7 @@ async def main():
                 name="reset_subdomains_update", address=conf.naming_contract
             ),
         ],
-        index_from_block=260_000,  # 260_000
+        index_from_block=311_074,  # 260_000 311_074
     )
 
     await runner.run()
