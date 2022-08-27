@@ -45,7 +45,7 @@ class Listener:
             elif event.name == "VerifiedData":
                 decoded = decode_verifier_data(event.data)
                 key = (
-                    str(decoded.type)
+                    str(decoded.field)
                     + ":"
                     + str(decoded.data)
                     + ":"
