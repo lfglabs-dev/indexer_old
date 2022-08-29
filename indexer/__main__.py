@@ -122,7 +122,7 @@ async def main():
         ],
         index_from_block=260_000,  # 260_000 311_074
     )
-
+    print("started")
     await runner.run()
 
 

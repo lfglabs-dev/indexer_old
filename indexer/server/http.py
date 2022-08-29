@@ -17,20 +17,20 @@ class WebServer:
         self.addr_to_domain_db = addr_to_domain_db
         self.tokenid_to_domain_db = tokenid_to_domain_db
 
-    async def fetch_tokens(self, request):
+    async def address_to_ids(self, request):
         try:
             addr = request.rel_url.query["address"]
-            return web.json_response({"tokens": self.owners_db[addr]})
+            return web.json_response({"ids": self.owners_db[addr]})
         except Exception:
-            return web.json_response({"tokens": []})
+            return web.json_response({"ids": []})
 
-    async def reverse_lookup(self, request):
+    async def field_data_to_id(self, request):
         try:
-            type = request.rel_url.query["type"]
+            field = request.rel_url.query["field"]
             data = request.rel_url.query["data"]
             verifier = request.rel_url.query["verifier"]
-            key = str(type) + ":" + str(data) + ":" + str(verifier)
-            return web.json_response({"token_id": str(self.verified_db[key])})
+            key = str(field) + ":" + str(data) + ":" + str(verifier)
+            return web.json_response({"id": str(self.verified_db[key])})
         except Exception:
             return web.json_response({"error": "no token found"})
 
@@ -46,17 +46,32 @@ class WebServer:
         try:
             domain = request.rel_url.query["domain"]
             addr = self.domain_to_addr_db[domain]
-            return web.json_response({"address": addr})
+            return web.json_response({"addr": addr})
         except KeyError:
             return web.json_response({"error": "no address found"})
 
     async def addr_to_domain(self, request):
         try:
-            addr = request.rel_url.query["address"]
+            addr = request.rel_url.query["addr"]
             domain = self.addr_to_domain_db[addr]
             return web.json_response({"domain": domain})
         except KeyError:
             return web.json_response({"error": "no domain found"})
+
+    async def address_to_available_ids(self, request):
+        try:
+            addr = request.rel_url.query["address"]
+            ids = self.owners_db[addr]
+            available = []
+            for sid in ids:
+                try:
+                    self.tokenid_to_domain_db["id:" + str(sid)]
+                    available.append(sid)
+                except KeyError:
+                    pass
+            return web.json_response({"ids": available})
+        except Exception:
+            return web.json_response({"ids": []})
 
     async def uri(self, request):
         try:
@@ -67,7 +82,7 @@ class WebServer:
                     {
                         "name": domain,
                         "description": "This token represents an identity on StarkNet that can be linked to external services.",
-                        "image": f"https://robohash.org/{id}",
+                        "image": f"https://starknet.id/api/identicons/{id}",
                     }
                 )
             except KeyError:
@@ -75,7 +90,7 @@ class WebServer:
                     {
                         "name": f"Starknet ID: {id}",
                         "description": "This token represents an identity on StarkNet that can be linked to external services.",
-                        "image": f"https://robohash.org/{id}",
+                        "image": f"https://starknet.id/api/identicons/{id}",
                     }
                 )
         except Exception:
@@ -83,8 +98,11 @@ class WebServer:
 
     def build_app(self):
         app = web.Application()
-        app.add_routes([web.get("/fetch_tokens", self.fetch_tokens)])
-        app.add_routes([web.get("/reverse_lookup", self.reverse_lookup)])
+        app.add_routes([web.get("/address_to_ids", self.address_to_ids)])
+        app.add_routes(
+            [web.get("/address_to_available_ids", self.address_to_available_ids)]
+        )
+        app.add_routes([web.get("/field_data_to_id", self.field_data_to_id)])
         app.add_routes([web.get("/uri", self.uri)])
         app.add_routes([web.get("/tokenid_to_domain", self.tokenid_to_domain)])
         app.add_routes([web.get("/domain_to_addr", self.domain_to_addr)])

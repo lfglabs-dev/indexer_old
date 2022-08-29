@@ -26,6 +26,7 @@ services:
       - mongo
 
   indexer:
+    container_name: indexer
     build: .
     command: python -u indexer
     restart: always
@@ -36,3 +37,18 @@ services:
       - apibara
     volumes:
       - ./_docker/starknet-id-indexer:/indexer/data
+
+  nginx:
+    image: valian/docker-nginx-auto-ssl
+    restart: on-failure
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ssl_data:/etc/resty-auto-ssl
+    environment:
+      ALLOWED_DOMAINS: 'goerli.indexer.starknet.id'
+      SITES: 'goerli.indexer.starknet.id=indexer:8082'
+
+volumes:
+  ssl_data:
