@@ -66,9 +66,8 @@ class WebServer:
             for sid in ids:
                 try:
                     self.tokenid_to_domain_db["id:" + str(sid)]
-                    available.append(sid)
                 except KeyError:
-                    pass
+                    available.append(sid)
             return web.json_response({"ids": available})
         except Exception:
             return web.json_response({"ids": []})
