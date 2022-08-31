@@ -4,7 +4,7 @@ docker = true
 
 [contract]
 starknetid = "0x0798e884450c19e072d6620fefdbeb7387d0453d3fd51d95f5ace1f17633d88b"
-naming = "0x001008e4987d49e8c6e9e17edef74d944f49ebea17790b703c74071fd0d45125"
+naming = "0x05cf267a0af6101667013fc6bd3f6c11116a14cda9b8c4b1198520d59f900b17"
 
 [apibara]
 indexer_id = "starknet-id"
