@@ -134,13 +134,14 @@ def decode_felt_to_domain_string(felt):
     basicAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789-"
     bigAlphabet = "这来"
     decoded = ""
+    big_size = len(basicAlphabet) + 1
     while felt != 0:
-        code = felt % len(basicAlphabet)
-        felt = felt // (len(basicAlphabet))
-        if code == len(basicAlphabet) - 1:
-            code2 = felt % len(bigAlphabet)
-            decoded += basicAlphabet[code2]
-            felt = felt // len(bigAlphabet)
+        code = felt % big_size
+        felt = felt // big_size
+        if code == len(basicAlphabet):
+            code2 = felt % big_size
+            decoded += bigAlphabet[code2]
+            felt = felt // big_size
         else:
             decoded += basicAlphabet[code]
     return decoded
