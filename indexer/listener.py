@@ -24,7 +24,7 @@ class Listener:
         self.tokenid_to_domain_db = tokenid_to_domain_db
 
     async def handle_events(self, _info: Info, block_events: NewEvents):
-        print("[block] -", block_events.block.number)
+        #print("[block] -", block_events.block.number)
         for event in block_events.events:
             if event.name == "Transfer":
                 decoded = decode_transfer_event(event.data)
@@ -33,14 +33,14 @@ class Listener:
                 token_id = decoded.token_id.id
                 if source != "0x0":
                     source_ids = self.owners_db.get(source, [])
-                    if source_ids:
+                    if source_ids and token_id in source_ids:
                         source_ids.remove(token_id)
                     self.owners_db[source] = source_ids
 
                 target_ids = self.owners_db.get(target, [])
                 target_ids.append(token_id)
                 self.owners_db[target] = target_ids
-                print("- [transfer]", token_id, source, "->", target)
+                #print("- [transfer]", token_id, source, "->", target)
 
             elif event.name == "VerifiedData":
                 decoded = decode_verifier_data(event.data)
@@ -61,8 +61,8 @@ class Listener:
 
             elif event.name == "addr_to_domain_update":
                 decoded = decode_addr_to_domain_data(event.data)
-                self.addr_to_domain_db[decoded.address] = decoded.domain
-                print("- [addr2domain]", decoded.address, "->", decoded.address)
+                self.addr_to_domain_db[str(decoded.address)] = decoded.domain
+                print("- [addr2domain]", decoded.address, "->", decoded.domain)
 
             elif event.name == "starknet_id_update":
                 decoded = decode_starknet_id_update(event.data)

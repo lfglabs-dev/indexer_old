@@ -53,7 +53,7 @@ class WebServer:
     async def addr_to_domain(self, request):
         try:
             addr = request.rel_url.query["addr"]
-            domain = self.addr_to_domain_db[addr]
+            domain = self.addr_to_domain_db[str(addr)]
             return web.json_response({"domain": domain})
         except KeyError:
             return web.json_response({"error": "no domain found"})

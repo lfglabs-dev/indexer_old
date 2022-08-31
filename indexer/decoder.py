@@ -161,7 +161,7 @@ def decode_domain_to_addr_data(data_input: List[bytes]) -> DomainToAddrUpdate:
     return DomainToAddrUpdate(domain, address)
 
 
-def decode_addr_to_domain_data(data_input: List[bytes]) -> DomainToAddrUpdate:
+def decode_addr_to_domain_data(data_input: List[bytes]) -> AddrToDomainUpdate:
     data_iter = iter(data_input)
 
     address = _felt_from_iter(data_iter)
@@ -173,7 +173,7 @@ def decode_addr_to_domain_data(data_input: List[bytes]) -> DomainToAddrUpdate:
         domain += decode_felt_to_domain_string(value) + "."
     domain += "stark"
 
-    return DomainToAddrUpdate(address, domain)
+    return AddrToDomainUpdate(address, domain)
 
 
 def decode_starknet_id_update(data_input: List[bytes]) -> StarknetIdUpdate:
