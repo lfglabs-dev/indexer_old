@@ -39,7 +39,7 @@ class WebServer:
             token_id = request.rel_url.query["id"]
             domain = self.tokenid_to_domain_db["id:" + str(token_id)]
             return web.json_response({"domain": domain})
-        except KeyError:
+        except Exception:
             return web.json_response({"error": "no domain found"})
 
     async def domain_to_addr(self, request):
@@ -47,7 +47,7 @@ class WebServer:
             domain = request.rel_url.query["domain"]
             addr = self.domain_to_addr_db[domain]
             return web.json_response({"addr": addr})
-        except KeyError:
+        except Exception:
             return web.json_response({"error": "no address found"})
 
     async def addr_to_domain(self, request):
@@ -55,7 +55,7 @@ class WebServer:
             addr = request.rel_url.query["addr"]
             domain = self.addr_to_domain_db[str(addr)]
             return web.json_response({"domain": domain})
-        except KeyError:
+        except Exception:
             return web.json_response({"error": "no domain found"})
 
     async def address_to_available_ids(self, request):
