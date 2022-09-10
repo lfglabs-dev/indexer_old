@@ -17,10 +17,10 @@ class WebServer:
         self.addr_to_domain_db = addr_to_domain_db
         self.tokenid_to_domain_db = tokenid_to_domain_db
 
-    async def address_to_ids(self, request):
+    async def addr_to_ids(self, request):
         try:
-            addr = request.rel_url.query["address"]
-            return web.json_response({"ids": self.owners_db[addr]})
+            addr = request.rel_url.query["addr"]
+            return web.json_response({"ids": [str(id) for id in self.owners_db[addr]]})
         except Exception:
             return web.json_response({"ids": []})
 
@@ -46,7 +46,7 @@ class WebServer:
         try:
             domain = request.rel_url.query["domain"]
             addr = self.domain_to_addr_db[domain]
-            return web.json_response({"addr": addr})
+            return web.json_response({"addr": str(addr)})
         except Exception:
             return web.json_response({"error": "no address found"})
 
@@ -58,19 +58,33 @@ class WebServer:
         except Exception:
             return web.json_response({"error": "no domain found"})
 
-    async def address_to_available_ids(self, request):
+    async def addr_to_available_ids(self, request):
         try:
-            addr = request.rel_url.query["address"]
+            addr = request.rel_url.query["addr"]
             ids = self.owners_db[addr]
             available = []
             for sid in ids:
                 try:
                     self.tokenid_to_domain_db["id:" + str(sid)]
                 except KeyError:
-                    available.append(sid)
+                    available.append(str(sid))
             return web.json_response({"ids": available})
         except Exception:
             return web.json_response({"ids": []})
+
+    async def addr_to_domains(self, request):
+        try:
+            addr = request.rel_url.query["addr"]
+            ids = self.owners_db[addr]
+            domains = []
+            for sid in ids:
+                try:
+                    domains.append(self.tokenid_to_domain_db["id:" + str(sid)])
+                except KeyError:
+                    pass
+            return web.json_response({"domains": domains})
+        except Exception:
+            return web.json_response({"domains": []})
 
     async def uri(self, request):
         try:
@@ -97,15 +111,14 @@ class WebServer:
 
     def build_app(self):
         app = web.Application()
-        app.add_routes([web.get("/address_to_ids", self.address_to_ids)])
-        app.add_routes(
-            [web.get("/address_to_available_ids", self.address_to_available_ids)]
-        )
+        app.add_routes([web.get("/addr_to_ids", self.addr_to_ids)])
+        app.add_routes([web.get("/addr_to_available_ids", self.addr_to_available_ids)])
         app.add_routes([web.get("/field_data_to_id", self.field_data_to_id)])
         app.add_routes([web.get("/uri", self.uri)])
         app.add_routes([web.get("/tokenid_to_domain", self.tokenid_to_domain)])
         app.add_routes([web.get("/domain_to_addr", self.domain_to_addr)])
         app.add_routes([web.get("/addr_to_domain", self.addr_to_domain)])
+        app.add_routes([web.get("/addr_to_domains", self.addr_to_domains)])
 
         cors = aiohttp_cors.setup(
             app,
