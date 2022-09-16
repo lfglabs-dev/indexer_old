@@ -1,9 +1,8 @@
 import asyncio
 from listener import Listener
 from server.http import WebServer
-from apibara import IndexerRunner
-from apibara.indexer.runner import IndexerRunnerConfiguration
-from apibara.model import EventFilter
+from apibara import EventFilter, IndexerRunner
+from apibara.indexer import IndexerRunnerConfiguration
 from aiohttp import web
 from config import TomlConfig
 import shelve
@@ -80,25 +79,28 @@ async def main():
             tokenid_to_domain_db,
         )
     )
+
     if conf.docker:
         runner = IndexerRunner(
             config=IndexerRunnerConfiguration(
-                apibara_url="apibara:7171",
+                apibara_url="goerli.starknet.stream.apibara.com:443",
                 storage_url="mongodb://apibara:apibara@mongo:27017",
             ),
-            network_name="starknet-goerli",
+            reset_state=True,
             indexer_id=conf.indexer_id,
             new_events_handler=events_manager.handle_events,
         )
     else:
         runner = IndexerRunner(
             config=IndexerRunnerConfiguration(
-                storage_url="mongodb://apibara:apibara@localhost:27017"
+                apibara_url="goerli.starknet.stream.apibara.com:443",
+                storage_url="mongodb://apibara:apibara@localhost:27017",
             ),
-            network_name="starknet-goerli",
+            reset_state=True,
             indexer_id=conf.indexer_id,
             new_events_handler=events_manager.handle_events,
         )
+
     runner.create_if_not_exists(
         filters=[
             EventFilter.from_event_name(
@@ -120,7 +122,7 @@ async def main():
                 name="reset_subdomains_update", address=conf.naming_contract
             ),
         ],
-        index_from_block=260_000,  # 260_000 311_074
+        index_from_block=287_722,  # 287_723 311_074
     )
     print("started")
     await runner.run()

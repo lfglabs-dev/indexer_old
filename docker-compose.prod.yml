@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+
   mongo:
     image: mongo:latest
     restart: always
@@ -12,19 +13,6 @@ services:
     volumes:
       - ./_docker/apibara_mongodb:/data/db
 
-  apibara:
-    image: apibara/apibara:0.3.2
-    restart: always
-    command: start --config /usr/etc/apibara/configuration.toml
-    environment:
-      RUST_LOG: "apibara=info"
-    ports:
-      - 7171:7171
-    volumes:
-      - ./configuration.toml:/usr/etc/apibara/configuration.toml
-    links:
-      - mongo
-
   indexer:
     container_name: indexer
     build: .
@@ -32,11 +20,10 @@ services:
     restart: always
     ports:
       - 8082:8082
-    links:
-      - mongo
-      - apibara
     volumes:
       - ./_docker/starknet-id-indexer:/indexer/data
+    links:
+      - mongo
 
   nginx:
     image: valian/docker-nginx-auto-ssl
