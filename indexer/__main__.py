@@ -107,7 +107,7 @@ async def main():
                 name="Transfer", address=conf.starknetid_contract
             ),
             EventFilter.from_event_name(
-                name="VerifiedData", address=conf.starknetid_contract
+                name="VerifierDataUpdate", address=conf.starknetid_contract
             ),
             EventFilter.from_event_name(
                 name="domain_to_addr_update", address=conf.naming_contract

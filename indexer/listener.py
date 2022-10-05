@@ -42,7 +42,7 @@ class Listener:
                 self.owners_db[target] = target_ids
                 print("- [transfer]", token_id, source, "->", target)
 
-            elif event.name == "VerifiedData":
+            elif event.name == "VerifierDataUpdate":
                 decoded = decode_verifier_data(event.data)
                 key = (
                     str(decoded.field)
