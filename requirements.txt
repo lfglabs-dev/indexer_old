@@ -1,4 +1,4 @@
-apibara==0.5.2
+apibara==0.5.6
 black
 aiohttp
 aiohttp_cors

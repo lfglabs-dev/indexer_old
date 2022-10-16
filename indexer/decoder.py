@@ -28,7 +28,7 @@ class TransferEvent:
 
 @dataclass
 class VerifierDataUpdate:
-    token_id: TokenId
+    token_id: int
     field: int
     data: int
     verifier: int
@@ -36,7 +36,7 @@ class VerifierDataUpdate:
 
 @dataclass
 class UserDataUpdate:
-    token_id: TokenId
+    token_id: int
     field: int
     data: int
 
@@ -120,9 +120,7 @@ def decode_transfer_event(data: List[bytes]) -> TransferEvent:
 
 def decode_verifier_data(data_input: List[bytes]) -> VerifierDataUpdate:
     data_iter = iter(data_input)
-    token_id = _uint256_from_iter(data_iter)
-    token_id = Uint256TokenId(token_id)
-
+    token_id = _felt_from_iter(data_iter)
     field = _felt_from_iter(data_iter)
     data = _felt_from_iter(data_iter)
     verifier = _felt_from_iter(data_iter)
