@@ -56,7 +56,7 @@ class AddrToDomainUpdate:
 @dataclass
 class StarknetIdUpdate:
     domain: string
-    owner: TokenId
+    owner: int
     expiry: int
 
 
@@ -196,8 +196,7 @@ def decode_starknet_id_update(data_input: List[bytes]) -> StarknetIdUpdate:
         value = _felt_from_iter(data_iter)
         domain += decode_felt_to_domain_string(value) + "."
     domain += "stark"
-    owner = _uint256_from_iter(data_iter)
-    owner = Uint256TokenId(owner)
+    owner = _felt_from_iter(data_iter)
     expiry = _felt_from_iter(data_iter)
 
     return StarknetIdUpdate(domain, owner, expiry)

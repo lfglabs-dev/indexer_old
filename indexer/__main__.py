@@ -122,7 +122,7 @@ async def main():
                 name="reset_subdomains_update", address=conf.naming_contract
             ),
         ],
-        index_from_block=373_813,
+        index_from_block=379_262,
     )
     print("started")
     await runner.run()

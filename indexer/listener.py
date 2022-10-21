@@ -67,9 +67,9 @@ class Listener:
             elif event.name == "starknet_id_update":
                 decoded = decode_starknet_id_update(event.data)
                 self.tokenid_to_domain_db[
-                    "id:" + str(decoded.owner.id)
+                    "id:" + str(decoded.owner)
                 ] = decoded.domain
-                print("- [starknet_id2domain]", decoded.owner.id, "->", decoded.domain)
+                print("- [starknet_id2domain]", decoded.owner, "->", decoded.domain)
 
             elif event.name == "reset_subdomains_update":
                 return
