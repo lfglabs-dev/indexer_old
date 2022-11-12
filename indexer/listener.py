@@ -51,8 +51,8 @@ class Listener:
                     + ":"
                     + str(decoded.verifier)
                 )
-                self.verified_db[key] = str(decoded.token_id.id)
-                print("- [data_update]", key, "->", decoded.token_id.id)
+                self.verified_db[key] = str(decoded.token_id)
+                print("- [data_update]", key, "->", decoded.token_id)
 
             elif event.name == "domain_to_addr_update":
                 decoded = decode_domain_to_addr_data(event.data)
@@ -66,9 +66,7 @@ class Listener:
 
             elif event.name == "starknet_id_update":
                 decoded = decode_starknet_id_update(event.data)
-                self.tokenid_to_domain_db[
-                    "id:" + str(decoded.owner)
-                ] = decoded.domain
+                self.tokenid_to_domain_db["id:" + str(decoded.owner)] = decoded.domain
                 print("- [starknet_id2domain]", decoded.owner, "->", decoded.domain)
 
             elif event.name == "reset_subdomains_update":
