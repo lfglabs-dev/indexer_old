@@ -1,16 +1,6 @@
 version: '3'
 
 services:
-  mongo:
-    image: mongo:latest
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: apibara
-      MONGO_INITDB_ROOT_PASSWORD: apibara
-    ports:
-    - 27017:27017
-    volumes:
-    - ./_docker/apibara_mongodb:/data/db
 
   indexer:
     container_name: indexer
@@ -21,5 +11,3 @@ services:
       - 8082:8082
     volumes:
       - ./_docker/starknet-id-indexer:/indexer/data
-    links:
-      - mongo

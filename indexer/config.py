@@ -27,7 +27,6 @@ class TomlConfig(Config):
 
         server = config["server"]
         self.server_port = server["port"]
-        self.docker = server["docker"]
 
         contract = config["contract"]
         self.starknetid_contract = contract["starknetid"]
@@ -35,3 +34,7 @@ class TomlConfig(Config):
 
         apibara = config["apibara"]
         self.indexer_id = apibara["indexer_id"]
+        self.reset_state = apibara["reset_state"]
+        self.starting_block = apibara["starting_block"]
+        self.connection_string = apibara["connection_string"]
+        self.provider_url = apibara["provider_url"]

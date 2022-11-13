@@ -1,26 +1,22 @@
 from aiohttp import web
 import aiohttp_cors
 
+from pymongo.database import Database
+
 
 class WebServer:
-    def __init__(
-        self,
-        owners_db,
-        verified_db,
-        domain_to_addr_db,
-        addr_to_domain_db,
-        tokenid_to_domain_db,
-    ) -> None:
-        self.owners_db = owners_db
-        self.verified_db = verified_db
-        self.domain_to_addr_db = domain_to_addr_db
-        self.addr_to_domain_db = addr_to_domain_db
-        self.tokenid_to_domain_db = tokenid_to_domain_db
+    def __init__(self, database: Database) -> None:
+        self.database = database
 
     async def addr_to_ids(self, request):
         try:
             addr = request.rel_url.query["addr"]
-            return web.json_response({"ids": [str(id) for id in self.owners_db[addr]]})
+            documents = self.database["starknet_ids"].find(
+                {"owner": addr, "_chain.valid_to": None}
+            )
+            return web.json_response(
+                {"ids": [document["token_id"] for document in documents]}
+            )
         except Exception:
             return web.json_response({"ids": []})
 
@@ -29,45 +25,72 @@ class WebServer:
             field = request.rel_url.query["field"]
             data = request.rel_url.query["data"]
             verifier = request.rel_url.query["verifier"]
-            key = str(field) + ":" + str(data) + ":" + str(verifier)
-            return web.json_response({"id": str(self.verified_db[key])})
+            document = self.database["starknet_ids_data"].find_one(
+                {
+                    "field": field,
+                    "data": data,
+                    "verifier": verifier,
+                    "_chain.valid_to": None,
+                }
+            )
+            return web.json_response({"id": document["token_id"]})
         except Exception:
             return web.json_response({"error": "no token found"})
 
     async def tokenid_to_domain(self, request):
         try:
             token_id = request.rel_url.query["id"]
-            domain = self.tokenid_to_domain_db["id:" + str(token_id)]
-            return web.json_response({"domain": domain})
+            document = self.database["domains"].find_one(
+                {
+                    "token_id": token_id,
+                    "_chain.valid_to": None,
+                }
+            )
+            return web.json_response({"domain": document["domain"]})
         except Exception:
             return web.json_response({"error": "no domain found"})
 
     async def domain_to_addr(self, request):
         try:
             domain = request.rel_url.query["domain"]
-            addr = self.domain_to_addr_db[domain]
-            return web.json_response({"addr": str(addr)})
+            document = self.database["domains"].find_one(
+                {
+                    "domain": domain,
+                    "_chain.valid_to": None,
+                }
+            )
+            return web.json_response({"addr": document["addr"]})
         except Exception:
             return web.json_response({"error": "no address found"})
 
     async def addr_to_domain(self, request):
         try:
             addr = request.rel_url.query["addr"]
-            domain = self.addr_to_domain_db[str(addr)]
-            return web.json_response({"domain": domain})
+            document = self.database["domains"].find_one(
+                {
+                    "rev_addr": addr,
+                    "_chain.valid_to": None,
+                }
+            )
+            return web.json_response({"domain": document["domain"]})
         except Exception:
             return web.json_response({"error": "no domain found"})
 
     async def addr_to_available_ids(self, request):
         try:
             addr = request.rel_url.query["addr"]
-            ids = self.owners_db[addr]
+
+            documents = self.database["starknet_ids"].find(
+                {"owner": addr, "_chain.valid_to": None}
+            )
+            ids = [document["token_id"] for document in documents]
             available = []
-            for sid in ids:
-                try:
-                    self.tokenid_to_domain_db["id:" + str(sid)]
-                except KeyError:
-                    available.append(str(sid))
+            for token_id in ids:
+                found = self.database["domains"].find_one(
+                    {"token_id": token_id, "_chain.valid_to": None}
+                )
+                print("found:", found)
+
             return web.json_response({"ids": available})
         except Exception:
             return web.json_response({"ids": []})
@@ -79,7 +102,14 @@ class WebServer:
             domains = []
             for sid in ids:
                 try:
-                    domains.append(self.tokenid_to_domain_db["id:" + str(sid)])
+                    document = self.database["domains"].find_one(
+                        {
+                            "token_id": sid,
+                            "_chain.valid_to": None,
+                        }
+                    )
+                    if document:
+                        domains.append(document["domain"])
                 except KeyError:
                     pass
             return web.json_response({"domains": domains})
@@ -89,8 +119,14 @@ class WebServer:
     async def uri(self, request):
         try:
             id = request.rel_url.query["id"]
-            try:
-                domain = self.tokenid_to_domain_db["id:" + str(id)]
+            document = self.database["domains"].find_one(
+                {
+                    "token_id": id,
+                    "_chain.valid_to": None,
+                }
+            )
+            if document:
+                domain = str(document["domain"])
                 return web.json_response(
                     {
                         "name": domain,
@@ -98,7 +134,7 @@ class WebServer:
                         "image": f"https://starknet.id/api/identicons/{id}",
                     }
                 )
-            except KeyError:
+            else:
                 return web.json_response(
                     {
                         "name": f"Starknet ID: {id}",

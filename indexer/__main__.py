@@ -5,101 +5,26 @@ from apibara import EventFilter, IndexerRunner
 from apibara.indexer import IndexerRunnerConfiguration
 from aiohttp import web
 from config import TomlConfig
+from pymongo import MongoClient
 import shelve
 import os
 
 
 async def main():
     conf = TomlConfig("config.toml", "config.template.toml")
-    if conf.docker:
-        owners_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "../data/owners.shelf"
-            )
-        )
-        verified_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "../data/verified.shelf"
-            )
-        )
-        domain_to_addr_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "../data/domain_to_addr_db.shelf",
-            )
-        )
-        addr_to_domain_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "../data/addr_to_domain_db.shelf",
-            )
-        )
-        tokenid_to_domain_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "../data/tokenid_to_domain.shelf",
-            )
-        )
-    else:
-        owners_db = shelve.open(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), "owners.shelf")
-        )
-        verified_db = shelve.open(
-            os.path.join(os.path.dirname(os.path.realpath(__file__)), "verified.shelf")
-        )
-        domain_to_addr_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "domain_to_addr_db.shelf"
-            )
-        )
-        addr_to_domain_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "addr_to_domain_db.shelf"
-            )
-        )
-        tokenid_to_domain_db = shelve.open(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "tokenid_to_domain.shelf"
-            )
-        )
-    events_manager = Listener(
-        owners_db,
-        verified_db,
-        domain_to_addr_db,
-        addr_to_domain_db,
-        tokenid_to_domain_db,
+    events_manager = Listener()
+    runner = IndexerRunner(
+        config=IndexerRunnerConfiguration(
+            apibara_url="goerli.starknet.stream.apibara.com:443",
+            storage_url=conf.connection_string,
+        ),
+        reset_state=conf.reset_state,
+        indexer_id=conf.indexer_id,
+        new_events_handler=events_manager.handle_events,
     )
-    asyncio.create_task(
-        start_server(
-            conf,
-            owners_db,
-            verified_db,
-            domain_to_addr_db,
-            addr_to_domain_db,
-            tokenid_to_domain_db,
-        )
-    )
-
-    if conf.docker:
-        runner = IndexerRunner(
-            config=IndexerRunnerConfiguration(
-                apibara_url="goerli.starknet.stream.apibara.com:443",
-                storage_url="mongodb://apibara:apibara@mongo:27017",
-            ),
-            reset_state=True,
-            indexer_id=conf.indexer_id,
-            new_events_handler=events_manager.handle_events,
-        )
-    else:
-        runner = IndexerRunner(
-            config=IndexerRunnerConfiguration(
-                apibara_url="goerli.starknet.stream.apibara.com:443",
-                storage_url="mongodb://apibara:apibara@localhost:27017",
-            ),
-            reset_state=True,
-            indexer_id=conf.indexer_id,
-            new_events_handler=events_manager.handle_events,
-        )
+    _mongo = MongoClient(conf.connection_string)
+    db_name = conf.indexer_id.replace("-", "_")
+    asyncio.create_task(start_server(conf, _mongo[db_name]))
 
     runner.create_if_not_exists(
         filters=[
@@ -122,27 +47,14 @@ async def main():
                 name="reset_subdomains_update", address=conf.naming_contract
             ),
         ],
-        index_from_block=379_262,
+        index_from_block=conf.starting_block,
     )
     print("started")
     await runner.run()
 
 
-async def start_server(
-    conf,
-    owners_db,
-    verified_db,
-    domain_to_addr_db,
-    addr_to_domain_db,
-    tokenid_to_domain_db,
-):
-    app = WebServer(
-        owners_db,
-        verified_db,
-        domain_to_addr_db,
-        addr_to_domain_db,
-        tokenid_to_domain_db,
-    ).build_app()
+async def start_server(conf, database):
+    app = WebServer(database).build_app()
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, port=conf.server_port).start()
