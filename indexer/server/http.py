@@ -112,7 +112,18 @@ class WebServer:
                         domains.append(document["domain"])
                 except KeyError:
                     pass
-            return web.json_response({"domains": domains})
+            document = self.database["domains"].find_one(
+                {
+                    "rev_addr": addr,
+                    "_chain.valid_to": None,
+                }
+            )
+            if document:
+                return web.json_response(
+                    {"domains": domains, "main": document["domain"]}
+                )
+            else:
+                return web.json_response({"domains": domains})
         except Exception:
             return web.json_response({"domains": []})
 
