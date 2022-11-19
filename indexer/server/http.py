@@ -89,7 +89,8 @@ class WebServer:
                 found = self.database["domains"].find_one(
                     {"token_id": token_id, "_chain.valid_to": None}
                 )
-                available.append(found["domain"])
+                if not found:
+                    available.append(token_id)
 
             return web.json_response({"ids": available})
         except Exception:
