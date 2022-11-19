@@ -21,8 +21,8 @@ services:
     volumes:
       - ssl_data:/etc/resty-auto-ssl
     environment:
-      ALLOWED_DOMAINS: 'goerli.indexer2.starknet.id'
-      SITES: 'goerli.indexer2.starknet.id=indexer:8082'
+      ALLOWED_DOMAINS: 'goerli2.indexer.starknet.id'
+      SITES: 'goerli2.indexer.starknet.id=indexer:8082'
 
 volumes:
   ssl_data:
