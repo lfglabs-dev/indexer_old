@@ -37,4 +37,4 @@ class TomlConfig(Config):
         self.reset_state = apibara["reset_state"]
         self.starting_block = apibara["starting_block"]
         self.connection_string = apibara["connection_string"]
-        self.provider_url = apibara["provider_url"]
+        self.apibara_stream = apibara["apibara_stream"]

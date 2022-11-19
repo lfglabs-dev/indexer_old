@@ -15,7 +15,7 @@ async def main():
     events_manager = Listener()
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
-            apibara_url="goerli.starknet.stream.apibara.com:443",
+            apibara_url=conf.apibara_stream,
             storage_url=conf.connection_string,
         ),
         reset_state=conf.reset_state,

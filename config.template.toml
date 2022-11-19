@@ -10,4 +10,4 @@ indexer_id = "starknet-id"
 reset_state = false
 starting_block = 396100
 connection_string = "mongodb://apibara:apibara@mongo:27017"
-provider_url = "https://starknet-goerli.apibara.com/"
+apibara_stream = "goerli.starknet.stream.apibara.com:443"
