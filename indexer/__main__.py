@@ -6,8 +6,6 @@ from apibara.indexer import IndexerRunnerConfiguration
 from aiohttp import web
 from config import TomlConfig
 from pymongo import MongoClient
-import shelve
-import os
 
 
 async def main():
@@ -25,7 +23,6 @@ async def main():
     _mongo = MongoClient(conf.connection_string)
     db_name = conf.indexer_id.replace("-", "_")
     asyncio.create_task(start_server(conf, _mongo[db_name]))
-
     runner.create_if_not_exists(
         filters=[
             EventFilter.from_event_name(
@@ -49,7 +46,7 @@ async def main():
         ],
         index_from_block=conf.starting_block,
     )
-    print("started")
+    print("starknetid indexer started")
     await runner.run()
 
 
