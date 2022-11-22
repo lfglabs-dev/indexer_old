@@ -68,11 +68,16 @@ class Listener:
 
             elif event.name == "addr_to_domain_update":
                 decoded = decode_addr_to_domain_data(event.data)
-                await _info.storage.find_one_and_update(
-                    "domains",
-                    {"domain": decoded.domain},
-                    {"$set": {"addr": str(decoded.address)}},
-                )
+                if decoded.domain:
+                    await _info.storage.find_one_and_update(
+                        "domains",
+                        {"domain": decoded.domain},
+                        {"$set": {"addr": str(decoded.address)}},
+                    )
+                else:
+                    await _info.storage.delete_one(
+                        "domains", {"domain": decoded.domain}
+                    )
                 print("- [addr2domain]", decoded.address, "->", decoded.domain)
 
             elif event.name == "starknet_id_update":

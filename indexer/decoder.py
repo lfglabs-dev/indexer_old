@@ -166,7 +166,8 @@ def decode_domain_to_addr_data(data_input: List[bytes]) -> DomainToAddrUpdate:
     for _ in range(arr_len):
         value = _felt_from_iter(data_iter)
         domain += decode_felt_to_domain_string(value) + "."
-    domain += "stark"
+    if domain:
+        domain += "stark"
     address = _felt_from_iter(data_iter)
 
     return DomainToAddrUpdate(domain, address)
@@ -182,7 +183,8 @@ def decode_addr_to_domain_data(data_input: List[bytes]) -> AddrToDomainUpdate:
     for _ in range(arr_len):
         value = _felt_from_iter(data_iter)
         domain += decode_felt_to_domain_string(value) + "."
-    domain += "stark"
+    if domain:
+        domain += "stark"
 
     return AddrToDomainUpdate(address, domain)
 
@@ -195,7 +197,8 @@ def decode_starknet_id_update(data_input: List[bytes]) -> StarknetIdUpdate:
     for _ in range(arr_len):
         value = _felt_from_iter(data_iter)
         domain += decode_felt_to_domain_string(value) + "."
-    domain += "stark"
+    if domain:
+        domain += "stark"
     owner = _felt_from_iter(data_iter)
     expiry = _felt_from_iter(data_iter)
 
