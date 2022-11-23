@@ -82,12 +82,17 @@ class Listener:
 
             elif event.name == "starknet_id_update":
                 decoded = decode_starknet_id_update(event.data)
-                await _info.storage.find_one_and_replace(
-                    "domains",
-                    {"domain": decoded.domain},
-                    {"domain": decoded.domain, "token_id": str(decoded.owner)},
-                    upsert=True,
-                )
+                if decoded.domain:
+                    await _info.storage.find_one_and_replace(
+                        "domains",
+                        {"domain": decoded.domain},
+                        {"domain": decoded.domain, "token_id": str(decoded.owner)},
+                        upsert=True,
+                    )
+                else:
+                    await _info.storage.delete_one(
+                        "domains", {"token_id": str(decoded.owner)}
+                    )
                 print("- [starknet_id2domain]", decoded.owner, "->", decoded.domain)
 
             elif event.name == "reset_subdomains_update":
