@@ -60,7 +60,12 @@ class WebServer:
                     "_chain.valid_to": None,
                 }
             )
-            return web.json_response({"addr": document["addr"]})
+            expiry = str(
+                datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
+            )
+            return web.json_response(
+                {"addr": document["addr"], "domain_expiry": expiry}
+            )
         except Exception:
             return web.json_response({"error": "no address found"})
 
@@ -73,7 +78,12 @@ class WebServer:
                     "_chain.valid_to": None,
                 }
             )
-            return web.json_response({"domain": document["domain"]})
+            expiry = str(
+                datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
+            )
+            return web.json_response(
+                {"domain": document["domain"], "domain_expiry": expiry}
+            )
         except Exception:
             return web.json_response({"error": "no domain found"})
 
