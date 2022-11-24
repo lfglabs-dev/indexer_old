@@ -23,7 +23,11 @@ class Listener:
                 if source != "0x0":
                     await _info.storage.delete_one(
                         "starknet_ids",
-                        {"owner": str(source), "token_id": str(token_id)},
+                        {
+                            "owner": str(source),
+                            "token_id": str(token_id),
+                            "_chain.valid_to": None,
+                        },
                     )
 
                 await _info.storage.insert_one(
@@ -45,6 +49,7 @@ class Listener:
                         "verifier": str(decoded.verifier),
                         "field": str(decoded.field),
                         "data": str(decoded.data),
+                        "_chain.valid_to": None,
                     },
                     upsert=True,
                 )
@@ -61,7 +66,7 @@ class Listener:
                 decoded = decode_domain_to_addr_data(event.data)
                 await _info.storage.find_one_and_update(
                     "domains",
-                    {"domain": decoded.domain},
+                    {"domain": decoded.domain, "_chain.valid_to": None},
                     {"$set": {"rev_addr": str(decoded.address)}},
                 )
                 print("- [domain2addr]", decoded.domain, "->", decoded.address)
@@ -71,7 +76,7 @@ class Listener:
                 if decoded.domain:
                     await _info.storage.find_one_and_update(
                         "domains",
-                        {"domain": decoded.domain},
+                        {"domain": decoded.domain, "_chain.valid_to": None},
                         {"$set": {"addr": str(decoded.address)}},
                     )
                 else:
@@ -85,8 +90,12 @@ class Listener:
                 if decoded.domain:
                     await _info.storage.find_one_and_replace(
                         "domains",
-                        {"domain": decoded.domain},
-                        {"domain": decoded.domain, "token_id": str(decoded.owner)},
+                        {"domain": decoded.domain, "_chain.valid_to": None},
+                        {
+                            "domain": decoded.domain,
+                            "expiry": decoded.expiry,
+                            "token_id": str(decoded.owner),
+                        },
                         upsert=True,
                     )
                 else:

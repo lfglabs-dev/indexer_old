@@ -2,6 +2,7 @@ from aiohttp import web
 import aiohttp_cors
 
 from pymongo.database import Database
+from datetime import datetime
 
 
 class WebServer:
@@ -139,18 +140,24 @@ class WebServer:
             )
             if document:
                 domain = str(document["domain"])
+                expiry_date = str(
+                    datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
+                )
                 return web.json_response(
                     {
                         "name": domain,
-                        "description": "This token represents an identity on StarkNet that can be linked to external services.",
+                        "description": "This token represents an identity on StarkNet.",
                         "image": f"https://starknet.id/api/identicons/{id}",
+                        "attributes": [
+                            {"trait_type": "Domain expiry", "value": [expiry_date]},
+                        ],
                     }
                 )
             else:
                 return web.json_response(
                     {
                         "name": f"Starknet ID: {id}",
-                        "description": "This token represents an identity on StarkNet that can be linked to external services.",
+                        "description": "This token represents an identity on StarkNet.",
                         "image": f"https://starknet.id/api/identicons/{id}",
                     }
                 )
