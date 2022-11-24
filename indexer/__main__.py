@@ -20,6 +20,7 @@ async def main():
         indexer_id=conf.indexer_id,
         new_events_handler=events_manager.handle_events,
     )
+    runner.add_pending_events_handler(events_manager.handle_events, interval_seconds=5)
     _mongo = MongoClient(conf.connection_string)
     db_name = conf.indexer_id.replace("-", "_")
     asyncio.create_task(start_server(conf, _mongo[db_name]))
