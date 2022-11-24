@@ -107,10 +107,36 @@ class WebServer:
         except Exception:
             return web.json_response({"ids": []})
 
+    async def addr_to_full_ids(self, request):
+        addr = request.rel_url.query["addr"]
+        documents = self.database["starknet_ids"].find(
+            {"owner": addr, "_chain.valid_to": None}
+        )
+        ids = [document["token_id"] for document in documents]
+        full_ids = []
+        for sid in ids:
+            try:
+                document = self.database["domains"].find_one(
+                    {
+                        "token_id": sid,
+                        "_chain.valid_to": None,
+                    }
+                )
+                if document:
+                    full_ids.append({"id": sid, "domain": document["domain"]})
+            except KeyError:
+                full_ids.append({"id": sid})
+
+        else:
+            return web.json_response({"full_ids": full_ids})
+
     async def addr_to_domains(self, request):
         try:
             addr = request.rel_url.query["addr"]
-            ids = self.owners_db[addr]
+            documents = self.database["starknet_ids"].find(
+                {"owner": addr, "_chain.valid_to": None}
+            )
+            ids = [document["token_id"] for document in documents]
             domains = []
             for sid in ids:
                 try:
@@ -178,6 +204,7 @@ class WebServer:
         app = web.Application()
         app.add_routes([web.get("/addr_to_ids", self.addr_to_ids)])
         app.add_routes([web.get("/addr_to_available_ids", self.addr_to_available_ids)])
+        app.add_routes([web.get("/addr_to_full_ids", self.addr_to_full_ids)])
         app.add_routes([web.get("/field_data_to_id", self.field_data_to_id)])
         app.add_routes([web.get("/uri", self.uri)])
         app.add_routes([web.get("/id_to_domain", self.id_to_domain)])
