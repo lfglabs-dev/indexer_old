@@ -38,7 +38,7 @@ class WebServer:
         except Exception:
             return web.json_response({"error": "no token found"})
 
-    async def tokenid_to_domain(self, request):
+    async def id_to_domain(self, request):
         try:
             token_id = request.rel_url.query["id"]
             document = self.database["domains"].find_one(
@@ -64,7 +64,7 @@ class WebServer:
                 datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
             )
             return web.json_response(
-                {"addr": document["addr"], "domain_expiry": expiry}
+                {"addr": document["rev_addr"], "domain_expiry": expiry}
             )
         except Exception:
             return web.json_response({"error": "no address found"})
@@ -180,7 +180,7 @@ class WebServer:
         app.add_routes([web.get("/addr_to_available_ids", self.addr_to_available_ids)])
         app.add_routes([web.get("/field_data_to_id", self.field_data_to_id)])
         app.add_routes([web.get("/uri", self.uri)])
-        app.add_routes([web.get("/tokenid_to_domain", self.tokenid_to_domain)])
+        app.add_routes([web.get("/id_to_domain", self.id_to_domain)])
         app.add_routes([web.get("/domain_to_addr", self.domain_to_addr)])
         app.add_routes([web.get("/addr_to_domain", self.addr_to_domain)])
         app.add_routes([web.get("/addr_to_domains", self.addr_to_domains)])
