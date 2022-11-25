@@ -47,20 +47,33 @@ class WebServer:
                     "_chain.valid_to": None,
                 }
             )
-            reversed_document = self.database["domains"].find_one(
-                {
-                    "rev_addr": document["addr"],
-                    "_chain.valid_to": None,
-                }
-            )
-            return web.json_response(
-                {
-                    "domain": document["domain"],
-                    "addr": document["addr"],
-                    "domain_expiry": document["expiry"],
-                    "is_main": bool(reversed_document),
-                }
-            )
+
+            try:
+                addr = document["addr"]
+                reversed_document = self.database["domains"].find_one(
+                    {
+                        "domain": document["domain"],
+                        "rev_addr": addr,
+                        "_chain.valid_to": None,
+                    }
+                )
+                return web.json_response(
+                    {
+                        "domain": document["domain"],
+                        "addr": document["addr"],
+                        "domain_expiry": document["expiry"],
+                        "is_main": bool(reversed_document),
+                    }
+                )
+
+            except KeyError:
+                return web.json_response(
+                    {
+                        "domain": document["domain"],
+                        "domain_expiry": document["expiry"],
+                        "is_main": False,
+                    }
+                )
         except Exception:
             return web.json_response({"error": "no domain found"})
 
@@ -68,10 +81,7 @@ class WebServer:
         try:
             domain = request.rel_url.query["domain"]
             document = self.database["domains"].find_one(
-                {
-                    "domain": domain,
-                    "_chain.valid_to": None,
-                }
+                {"domain": domain, "addr": {"$exists": True}, "_chain.valid_to": None}
             )
             expiry = str(
                 datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
@@ -108,7 +118,10 @@ class WebServer:
             available = []
             for token_id in ids:
                 found = self.database["domains"].find_one(
-                    {"token_id": token_id, "_chain.valid_to": None}
+                    {
+                        "token_id": token_id,
+                        "_chain.valid_to": None,
+                    }
                 )
                 if not found:
                     available.append(token_id)
@@ -162,6 +175,7 @@ class WebServer:
             document = self.database["domains"].find_one(
                 {
                     "rev_addr": addr,
+                    "addr": addr,
                     "_chain.valid_to": None,
                 }
             )

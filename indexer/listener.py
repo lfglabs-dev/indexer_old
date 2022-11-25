@@ -64,24 +64,32 @@ class Listener:
 
             elif event.name == "domain_to_addr_update":
                 decoded = decode_domain_to_addr_data(event.data)
-                await _info.storage.find_one_and_update(
-                    "domains",
-                    {"domain": decoded.domain, "_chain.valid_to": None},
-                    {"$set": {"addr": str(decoded.address)}},
-                )
+                if decoded.domain:
+                    await _info.storage.find_one_and_update(
+                        "domains",
+                        {"domain": decoded.domain, "_chain.valid_to": None},
+                        {"$set": {"addr": str(decoded.address)}},
+                    )
+                else:
+                    await _info.storage.find_one_and_update(
+                        "domains",
+                        {"domain": decoded.domain, "_chain.valid_to": None},
+                        {"$unset": {"addr": None}},
+                    )
                 print("- [domain2addr]", decoded.domain, "->", decoded.address)
 
             elif event.name == "addr_to_domain_update":
                 decoded = decode_addr_to_domain_data(event.data)
+                await _info.storage.find_one_and_update(
+                    "domains",
+                    {"rev_addr": str(decoded.address), "_chain.valid_to": None},
+                    {"$unset": {"rev_addr": None}},
+                )
                 if decoded.domain:
                     await _info.storage.find_one_and_update(
                         "domains",
                         {"domain": decoded.domain, "_chain.valid_to": None},
                         {"$set": {"rev_addr": str(decoded.address)}},
-                    )
-                else:
-                    await _info.storage.delete_one(
-                        "domains", {"domain": decoded.domain}
                     )
                 print("- [addr2domain]", decoded.address, "->", decoded.domain)
 
