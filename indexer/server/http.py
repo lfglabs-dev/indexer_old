@@ -125,16 +125,15 @@ class WebServer:
         ids = [document["token_id"] for document in documents]
         full_ids = []
         for sid in ids:
-            try:
-                document = self.database["domains"].find_one(
-                    {
-                        "token_id": sid,
-                        "_chain.valid_to": None,
-                    }
-                )
-                if document:
-                    full_ids.append({"id": sid, "domain": document["domain"]})
-            except KeyError:
+            document = self.database["domains"].find_one(
+                {
+                    "token_id": sid,
+                    "_chain.valid_to": None,
+                }
+            )
+            if document:
+                full_ids.append({"id": sid, "domain": document["domain"]})
+            else:
                 full_ids.append({"id": sid})
 
         else:
