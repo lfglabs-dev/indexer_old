@@ -38,7 +38,7 @@ class WebServer:
         except Exception:
             return web.json_response({"error": "no token found"})
 
-    async def id_to_domain(self, request):
+    async def id_to_data(self, request):
         try:
             token_id = request.rel_url.query["id"]
             document = self.database["domains"].find_one(
@@ -47,7 +47,20 @@ class WebServer:
                     "_chain.valid_to": None,
                 }
             )
-            return web.json_response({"domain": document["domain"]})
+            reversed_document = self.database["domains"].find_one(
+                {
+                    "rev_addr": document["addr"],
+                    "_chain.valid_to": None,
+                }
+            )
+            return web.json_response(
+                {
+                    "domain": document["domain"],
+                    "addr": document["addr"],
+                    "domain_expiry": document["expiry"],
+                    "is_main": bool(reversed_document),
+                }
+            )
         except Exception:
             return web.json_response({"error": "no domain found"})
 
@@ -64,7 +77,7 @@ class WebServer:
                 datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
             )
             return web.json_response(
-                {"addr": document["rev_addr"], "domain_expiry": expiry}
+                {"addr": document["addr"], "domain_expiry": expiry}
             )
         except Exception:
             return web.json_response({"error": "no address found"})
@@ -74,15 +87,12 @@ class WebServer:
             addr = request.rel_url.query["addr"]
             document = self.database["domains"].find_one(
                 {
-                    "rev_addr": addr,
+                    "addr": addr,
                     "_chain.valid_to": None,
                 }
             )
-            expiry = str(
-                datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
-            )
             return web.json_response(
-                {"domain": document["domain"], "domain_expiry": expiry}
+                {"domain": document["domain"], "domain_expiry": document["expiry"]}
             )
         except Exception:
             return web.json_response({"error": "no domain found"})
@@ -207,7 +217,7 @@ class WebServer:
         app.add_routes([web.get("/addr_to_full_ids", self.addr_to_full_ids)])
         app.add_routes([web.get("/field_data_to_id", self.field_data_to_id)])
         app.add_routes([web.get("/uri", self.uri)])
-        app.add_routes([web.get("/id_to_domain", self.id_to_domain)])
+        app.add_routes([web.get("/id_to_data", self.id_to_data)])
         app.add_routes([web.get("/domain_to_addr", self.domain_to_addr)])
         app.add_routes([web.get("/addr_to_domain", self.addr_to_domain)])
         app.add_routes([web.get("/addr_to_domains", self.addr_to_domains)])

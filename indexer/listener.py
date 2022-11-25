@@ -67,7 +67,7 @@ class Listener:
                 await _info.storage.find_one_and_update(
                     "domains",
                     {"domain": decoded.domain, "_chain.valid_to": None},
-                    {"$set": {"rev_addr": str(decoded.address)}},
+                    {"$set": {"addr": str(decoded.address)}},
                 )
                 print("- [domain2addr]", decoded.domain, "->", decoded.address)
 
@@ -77,7 +77,7 @@ class Listener:
                     await _info.storage.find_one_and_update(
                         "domains",
                         {"domain": decoded.domain, "_chain.valid_to": None},
-                        {"$set": {"addr": str(decoded.address)}},
+                        {"$set": {"rev_addr": str(decoded.address)}},
                     )
                 else:
                     await _info.storage.delete_one(
