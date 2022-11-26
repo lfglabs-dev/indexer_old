@@ -98,6 +98,7 @@ class WebServer:
             document = self.database["domains"].find_one(
                 {
                     "addr": addr,
+                    "rev_addr": addr,
                     "_chain.valid_to": None,
                 }
             )
