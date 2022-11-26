@@ -60,6 +60,13 @@ class StarknetIdUpdate:
     expiry: int
 
 
+@dataclass
+class DomainTransfer:
+    domain: string
+    prev_owner: int
+    new_owner: int
+
+
 class ERC721Contract:
     def __init__(self, rpc, address) -> None:
         self._rpc = rpc
@@ -203,6 +210,22 @@ def decode_starknet_id_update(data_input: List[bytes]) -> StarknetIdUpdate:
     expiry = _felt_from_iter(data_iter)
 
     return StarknetIdUpdate(domain, owner, expiry)
+
+
+def decode_domain_transfer(data_input: List[bytes]) -> DomainTransfer:
+    data_iter = iter(data_input)
+
+    arr_len = _felt_from_iter(data_iter)
+    domain = ""
+    for _ in range(arr_len):
+        value = _felt_from_iter(data_iter)
+        domain += decode_felt_to_domain_string(value) + "."
+    if domain:
+        domain += "stark"
+    prev_owner = _felt_from_iter(data_iter)
+    new_owner = _felt_from_iter(data_iter)
+
+    return DomainTransfer(domain, prev_owner, new_owner)
 
 
 def hex_to_bytes(s: str) -> bytes:

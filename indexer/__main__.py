@@ -42,6 +42,9 @@ async def main():
                 name="starknet_id_update", address=conf.naming_contract
             ),
             EventFilter.from_event_name(
+                name="domain_transfer", address=conf.naming_contract
+            ),
+            EventFilter.from_event_name(
                 name="reset_subdomains_update", address=conf.naming_contract
             ),
         ],

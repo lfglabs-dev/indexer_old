@@ -5,6 +5,7 @@ from decoder import (
     decode_domain_to_addr_data,
     decode_addr_to_domain_data,
     decode_starknet_id_update,
+    decode_domain_transfer,
 )
 
 
@@ -95,22 +96,50 @@ class Listener:
 
             elif event.name == "starknet_id_update":
                 decoded = decode_starknet_id_update(event.data)
-                if decoded.domain:
-                    await _info.storage.find_one_and_replace(
+                # we want to upsert
+                existing = await _info.storage.find_one_and_update(
+                    "domains",
+                    {"domain": decoded.domain, "_chain.valid_to": None},
+                    {
+                        "$set": {
+                            "domain": decoded.domain,
+                            "expiry": decoded.expiry,
+                            "token_id": str(decoded.owner),
+                        }
+                    },
+                )
+                if existing is None:
+                    await _info.storage.insert_one(
                         "domains",
-                        {"domain": decoded.domain, "_chain.valid_to": None},
                         {
                             "domain": decoded.domain,
                             "expiry": decoded.expiry,
                             "token_id": str(decoded.owner),
                         },
-                        upsert=True,
                     )
-                else:
-                    await _info.storage.delete_one(
-                        "domains", {"token_id": str(decoded.owner)}
-                    )
+
                 print("- [starknet_id2domain]", decoded.owner, "->", decoded.domain)
+
+            elif event.name == "domain_transfer":
+                decoded = decode_domain_transfer(event.data)
+
+                await _info.storage.find_one_and_update(
+                    "domains",
+                    {
+                        "domain": decoded.domain,
+                        "token_id": str(decoded.prev_owner),
+                        "_chain.valid_to": None,
+                    },
+                    {"$set": {"token_id": str(decoded.new_owner)}},
+                )
+
+                print(
+                    "- [domain_transfer]",
+                    decoded.domain,
+                    decoded.prev_owner,
+                    "->",
+                    decoded.new_owner,
+                )
 
             elif event.name == "reset_subdomains_update":
                 return
