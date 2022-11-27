@@ -137,6 +137,8 @@ class Listener:
                         "domains",
                         {
                             "domain": decoded.domain,
+                            "addr": "0",
+                            "expiry": None,
                             "token_id": str(decoded.new_owner),
                         },
                     )
