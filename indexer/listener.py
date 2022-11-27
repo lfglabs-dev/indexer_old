@@ -122,16 +122,24 @@ class Listener:
 
             elif event.name == "domain_transfer":
                 decoded = decode_domain_transfer(event.data)
-
-                await _info.storage.find_one_and_update(
-                    "domains",
-                    {
-                        "domain": decoded.domain,
-                        "token_id": str(decoded.prev_owner),
-                        "_chain.valid_to": None,
-                    },
-                    {"$set": {"token_id": str(decoded.new_owner)}},
-                )
+                if decoded.prev_owner:
+                    await _info.storage.find_one_and_update(
+                        "domains",
+                        {
+                            "domain": decoded.domain,
+                            "token_id": str(decoded.prev_owner),
+                            "_chain.valid_to": None,
+                        },
+                        {"$set": {"token_id": str(decoded.new_owner)}},
+                    )
+                else:
+                    await _info.storage.insert_one(
+                        "domains",
+                        {
+                            "domain": decoded.domain,
+                            "token_id": str(decoded.new_owner),
+                        },
+                    )
 
                 print(
                     "- [domain_transfer]",
