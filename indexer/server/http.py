@@ -47,13 +47,16 @@ class WebServer:
                     "_chain.valid_to": None,
                 }
             )
-
             try:
-                addr = document["addr"]
+                starknet_id_document = self.database["starknet_ids"].find_one(
+                    {"token_id": token_id, "_chain.valid_to": None}
+                )
+                starknet_id_owner = starknet_id_document["owner"]
                 reversed_document = self.database["domains"].find_one(
                     {
                         "domain": document["domain"],
-                        "rev_addr": addr,
+                        "addr": starknet_id_owner,
+                        "rev_addr": starknet_id_owner,
                         "_chain.valid_to": None,
                     }
                 )
@@ -62,16 +65,15 @@ class WebServer:
                         "domain": document["domain"],
                         "addr": document["addr"],
                         "domain_expiry": document["expiry"],
-                        "is_main": bool(reversed_document),
+                        "is_owner_main": bool(reversed_document),
                     }
                 )
-
             except KeyError:
                 return web.json_response(
                     {
                         "domain": document["domain"],
                         "domain_expiry": document["expiry"],
-                        "is_main": False,
+                        "is_owner_main": False,
                     }
                 )
         except Exception:
