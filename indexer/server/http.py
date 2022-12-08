@@ -214,6 +214,10 @@ class WebServer:
                         "expiry": expiry_timestamp,
                         "attributes": [
                             {"trait_type": "Domain expiry", "value": [expiry_date]},
+                            {
+                                "trait_type": "Domain expiry timestamp",
+                                "value": expiry_timestamp,
+                            },
                         ],
                     }
                 )
