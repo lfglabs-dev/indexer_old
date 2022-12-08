@@ -202,14 +202,16 @@ class WebServer:
             )
             if document:
                 domain = str(document["domain"])
+                expiry_timestamp = document["expiry"]
                 expiry_date = str(
-                    datetime.fromtimestamp(document["expiry"]).strftime("%y-%m-%d")
+                    datetime.fromtimestamp(expiry_timestamp).strftime("%y-%m-%d")
                 )
                 return web.json_response(
                     {
                         "name": domain,
                         "description": "This token represents an identity on StarkNet.",
                         "image": f"https://starknet.id/api/identicons/{id}",
+                        "expiry": expiry_timestamp,
                         "attributes": [
                             {"trait_type": "Domain expiry", "value": [expiry_date]},
                         ],
