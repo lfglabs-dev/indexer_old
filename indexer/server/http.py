@@ -203,8 +203,10 @@ class WebServer:
             if document:
                 domain = str(document["domain"])
                 expiry_timestamp = document["expiry"]
-                expiry_date = str(
-                    datetime.fromtimestamp(expiry_timestamp).strftime("%y-%m-%d")
+                expiry_date = (
+                    str(datetime.fromtimestamp(expiry_timestamp).strftime("%y-%m-%d"))
+                    if expiry_timestamp
+                    else "None"
                 )
                 return web.json_response(
                     {
