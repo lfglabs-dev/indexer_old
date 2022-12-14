@@ -215,6 +215,10 @@ class WebServer:
                         "image": f"https://starknet.id/api/identicons/{id}",
                         "expiry": expiry_timestamp,
                         "attributes": [
+                            {
+                                "trait_type": "Subdomain",
+                                "value": "yes" if "." in domain[:-6] else "no",
+                            },
                             {"trait_type": "Domain expiry", "value": [expiry_date]},
                             {
                                 "trait_type": "Domain expiry timestamp",
