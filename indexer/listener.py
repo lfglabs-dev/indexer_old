@@ -115,6 +115,7 @@ class Listener:
                             "domain": decoded.domain,
                             "expiry": decoded.expiry,
                             "token_id": str(decoded.owner),
+                            "creation_date": block_events.block.timestamp,
                         },
                     )
 
