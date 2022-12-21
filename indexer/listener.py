@@ -20,20 +20,24 @@ class Listener:
                 target = "" + str(decoded.to_address)
                 token_id = decoded.token_id.id
 
-                # removing previous owner
-                if source != "0x0":
-                    await _info.storage.delete_one(
+                # update existing owner
+                existing = False
+                if source != "0":
+                    existing = await _info.storage.find_one_and_update(
+                        "starknet_ids",
+                        {"token_id": str(token_id), "_chain.valid_to": None},
+                        {"$set": {"owner": str(source)}},
+                    )
+                if not existing:
+                    await _info.storage.insert_one(
                         "starknet_ids",
                         {
-                            "owner": str(source),
+                            "owner": str(target),
                             "token_id": str(token_id),
-                            "_chain.valid_to": None,
+                            "creation_date": block_events.block.timestamp,
                         },
                     )
 
-                await _info.storage.insert_one(
-                    "starknet_ids", {"owner": str(target), "token_id": str(token_id)}
-                )
                 print("- [transfer]", token_id, source, "->", target)
 
             elif event.name == "VerifierDataUpdate":
@@ -59,9 +63,9 @@ class Listener:
                     + ":"
                     + str(decoded.data)
                     + ":"
-                    + str(decoded.verifier)
+                    + hex(decoded.verifier)
                 )
-                print("- [data_update]", key, "->", decoded.token_id)
+                print("- [data_update]", decoded.token_id, "->", key)
 
             elif event.name == "domain_to_addr_update":
                 decoded = decode_domain_to_addr_data(event.data)
@@ -77,7 +81,7 @@ class Listener:
                         {"domain": decoded.domain, "_chain.valid_to": None},
                         {"$unset": {"addr": None}},
                     )
-                print("- [domain2addr]", decoded.domain, "->", decoded.address)
+                print("- [domain2addr]", decoded.domain, "->", hex(decoded.address))
 
             elif event.name == "addr_to_domain_update":
                 decoded = decode_addr_to_domain_data(event.data)
@@ -92,7 +96,7 @@ class Listener:
                         {"domain": decoded.domain, "_chain.valid_to": None},
                         {"$set": {"rev_addr": str(decoded.address)}},
                     )
-                print("- [addr2domain]", decoded.address, "->", decoded.domain)
+                print("- [addr2domain]", hex(decoded.address), "->", decoded.domain)
 
             elif event.name == "starknet_id_update":
                 decoded = decode_starknet_id_update(event.data)
@@ -118,8 +122,30 @@ class Listener:
                             "creation_date": block_events.block.timestamp,
                         },
                     )
-
-                print("- [starknet_id2domain]", decoded.owner, "->", decoded.domain)
+                    print(
+                        "- [purchased]",
+                        "domain:",
+                        decoded.domain,
+                        "id:",
+                        decoded.owner,
+                    )
+                else:
+                    await _info.storage.insert_one(
+                        "domains_renewals",
+                        {
+                            "domain": decoded.domain,
+                            "prev_expiry": existing["expiry"],
+                            "new_expiry": decoded.expiry,
+                            "renewal_date": block_events.block.timestamp,
+                        },
+                    )
+                    print(
+                        "- [renewed]",
+                        "domain:",
+                        decoded.domain,
+                        "id:",
+                        decoded.owner,
+                    )
 
             elif event.name == "domain_transfer":
                 decoded = decode_domain_transfer(event.data)
