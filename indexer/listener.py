@@ -27,7 +27,7 @@ class Listener:
                     existing = await _info.storage.find_one_and_update(
                         "starknet_ids",
                         {"token_id": str(token_id), "_chain.valid_to": None},
-                        {"$set": {"owner": str(source)}},
+                        {"$set": {"owner": str(target)}},
                     )
                 if not existing:
                     await _info.storage.insert_one(
