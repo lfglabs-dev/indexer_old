@@ -6,6 +6,7 @@ from decoder import (
     decode_addr_to_domain_data,
     decode_starknet_id_update,
     decode_domain_transfer,
+    decode_reset_subdomains_update,
 )
 
 
@@ -179,7 +180,12 @@ class Listener:
                 )
 
             elif event.name == "reset_subdomains_update":
-                return
+                decoded = decode_reset_subdomains_update(event.data)
+                await _info.storage.delete_many(
+                    "domains",
+                    {"domain": {"$regex": ".*\." + decoded.domain.replace(".", "\.")}},
+                )
+                print("- [reset_subdomains]", decoded.domain)
 
             else:
                 print("error: event", event.name, "not supported")

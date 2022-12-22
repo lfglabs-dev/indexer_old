@@ -67,6 +67,11 @@ class DomainTransfer:
     new_owner: int
 
 
+@dataclass
+class ResetSubdomainsUpdate:
+    domain: string
+
+
 class ERC721Contract:
     def __init__(self, rpc, address) -> None:
         self._rpc = rpc
@@ -235,6 +240,20 @@ def decode_domain_transfer(data_input: List[bytes]) -> DomainTransfer:
     new_owner = _felt_from_iter(data_iter)
 
     return DomainTransfer(domain, prev_owner, new_owner)
+
+
+def decode_reset_subdomains_update(data_input: List[bytes]) -> ResetSubdomainsUpdate:
+    data_iter = iter(data_input)
+
+    arr_len = _felt_from_iter(data_iter)
+    domain = ""
+    for _ in range(arr_len):
+        value = _felt_from_iter(data_iter)
+        domain += decode_felt_to_domain_string(value) + "."
+    if domain:
+        domain += "stark"
+
+    return ResetSubdomainsUpdate(domain)
 
 
 def hex_to_bytes(s: str) -> bytes:
