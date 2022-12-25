@@ -146,6 +146,9 @@ class Listener:
                         decoded.domain,
                         "id:",
                         decoded.owner,
+                        "time:",
+                        (int(decoded.expiry) - int(existing["expiry"])) / 86400,
+                        "days",
                     )
 
             elif event.name == "domain_transfer":
