@@ -1,9 +1,7 @@
 import asyncio
 from listener import Listener
-from server.http import WebServer
 from apibara import EventFilter, IndexerRunner
 from apibara.indexer import IndexerRunnerConfiguration
-from aiohttp import web
 from config import TomlConfig
 from pymongo import MongoClient
 
@@ -23,7 +21,6 @@ async def main():
     runner.add_pending_events_handler(events_manager.handle_events, interval_seconds=5)
     _mongo = MongoClient(conf.connection_string)
     db_name = conf.indexer_id.replace("-", "_")
-    asyncio.create_task(start_server(conf, _mongo[db_name]))
     runner.create_if_not_exists(
         filters=[
             EventFilter.from_event_name(
@@ -52,13 +49,6 @@ async def main():
     )
     print("starknetid indexer started")
     await runner.run()
-
-
-async def start_server(conf, database):
-    app = WebServer(database).build_app()
-    runner = web.AppRunner(app)
-    await runner.setup()
-    await web.TCPSite(runner, port=conf.server_port).start()
 
 
 if __name__ == "__main__":

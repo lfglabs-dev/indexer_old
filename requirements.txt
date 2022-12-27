@@ -1,5 +1,3 @@
-apibara==0.5.14
+apibara==0.5.16
 black
-aiohttp
-aiohttp_cors
 toml
