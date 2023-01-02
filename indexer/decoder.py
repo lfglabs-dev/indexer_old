@@ -27,6 +27,13 @@ class TransferEvent:
 
 
 @dataclass
+class SbtTransferEvent:
+    sbt: int
+    source: int
+    target: int
+
+
+@dataclass
 class VerifierDataUpdate:
     token_id: int
     field: int
@@ -138,6 +145,15 @@ def decode_verifier_data(data_input: List[bytes]) -> VerifierDataUpdate:
     verifier = _felt_from_iter(data_iter)
 
     return VerifierDataUpdate(token_id, field, data, verifier)
+
+
+def decode_sbt_transfer(data_input: List[bytes]) -> SbtTransferEvent:
+    data_iter = iter(data_input)
+    sbt = _felt_from_iter(data_iter)
+    source = _felt_from_iter(data_iter)
+    target = _felt_from_iter(data_iter)
+
+    return SbtTransferEvent(sbt, source, target)
 
 
 def decode_felt_to_domain_string(felt):

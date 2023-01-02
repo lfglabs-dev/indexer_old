@@ -7,6 +7,7 @@ from decoder import (
     decode_starknet_id_update,
     decode_domain_transfer,
     decode_reset_subdomains_update,
+    decode_sbt_transfer,
 )
 
 
@@ -189,6 +190,34 @@ class Listener:
                     {"domain": {"$regex": ".*\." + decoded.domain.replace(".", "\.")}},
                 )
                 print("- [reset_subdomains]", decoded.domain)
+
+            elif event.name == "sbt_transfer":
+                decoded = decode_sbt_transfer(event.data)
+
+                await _info.storage.find_one_and_replace(
+                    "sbt",
+                    {
+                        "contract": str(event.address),
+                        "sbt": str(decoded.sbt),
+                        "_chain.valid_to": None,
+                    },
+                    {
+                        "contract": str(event.address),
+                        "sbt": str(decoded.sbt),
+                        "owner": str(decoded.target),
+                        "_chain.valid_to": None,
+                    },
+                    upsert=True,
+                )
+                print(
+                    "- [sbt transfer]",
+                    hex(event.address),
+                    "sbt:",
+                    decoded.sbt,
+                    decoded.source,
+                    "->",
+                    decoded.target,
+                )
 
             else:
                 print("error: event", event.name, "not supported")

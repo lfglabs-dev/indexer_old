@@ -19,8 +19,6 @@ async def main():
         new_events_handler=events_manager.handle_events,
     )
     runner.add_pending_events_handler(events_manager.handle_events, interval_seconds=5)
-    _mongo = MongoClient(conf.connection_string)
-    db_name = conf.indexer_id.replace("-", "_")
     runner.create_if_not_exists(
         filters=[
             EventFilter.from_event_name(
@@ -44,6 +42,7 @@ async def main():
             EventFilter.from_event_name(
                 name="reset_subdomains_update", address=conf.naming_contract
             ),
+            EventFilter.from_event_name(name="sbt_transfer"),
         ],
         index_from_block=conf.starting_block,
     )
