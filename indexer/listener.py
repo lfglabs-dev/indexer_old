@@ -193,16 +193,16 @@ class Listener:
 
             elif event.name == "sbt_transfer":
                 decoded = decode_sbt_transfer(event.data)
-
+                contract_addr = str(int.from_bytes(event.address, "big"))
                 await _info.storage.find_one_and_replace(
                     "sbt",
                     {
-                        "contract": str(event.address),
+                        "contract": contract_addr,
                         "sbt": str(decoded.sbt),
                         "_chain.valid_to": None,
                     },
                     {
-                        "contract": str(event.address),
+                        "contract": contract_addr,
                         "sbt": str(decoded.sbt),
                         "owner": str(decoded.target),
                         "_chain.valid_to": None,
@@ -211,7 +211,7 @@ class Listener:
                 )
                 print(
                     "- [sbt transfer]",
-                    hex(event.address),
+                    contract_addr,
                     "sbt:",
                     decoded.sbt,
                     decoded.source,
