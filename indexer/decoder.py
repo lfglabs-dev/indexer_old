@@ -34,6 +34,13 @@ class SbtTransferEvent:
 
 
 @dataclass
+class InftEquippedEvent:
+    contract: int
+    inft_id: int
+    starknet_id: int
+
+
+@dataclass
 class VerifierDataUpdate:
     token_id: int
     field: int
@@ -154,6 +161,14 @@ def decode_sbt_transfer(data_input: List[bytes]) -> SbtTransferEvent:
     target = _felt_from_iter(data_iter)
 
     return SbtTransferEvent(sbt, source, target)
+
+
+def decode_inft_equipping(data_input: List[bytes]) -> InftEquippedEvent:
+    data_iter = iter(data_input)
+    contract = _felt_from_iter(data_iter)
+    inft_id = _felt_from_iter(data_iter)
+    starknet_id = _felt_from_iter(data_iter)
+    return InftEquippedEvent(contract, inft_id, starknet_id)
 
 
 def decode_felt_to_domain_string(felt):

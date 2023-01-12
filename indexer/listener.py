@@ -8,6 +8,7 @@ from decoder import (
     decode_domain_transfer,
     decode_reset_subdomains_update,
     decode_sbt_transfer,
+    decode_inft_equipping,
 )
 
 
@@ -218,6 +219,48 @@ class Listener:
                     "->",
                     decoded.target,
                 )
+
+            elif event.name == "on_inft_equipped":
+                decoded = decode_inft_equipping(event.data)
+                if decoded.starknet_id:
+                    await _info.storage.find_one_and_replace(
+                        "equipped_infts",
+                        {
+                            "contract": hex(decoded.contract),
+                            "inft_id": str(decoded.inft_id),
+                            "_chain.valid_to": None,
+                        },
+                        {
+                            "contract": hex(decoded.contract),
+                            "inft_id": str(decoded.inft_id),
+                            "starknet_id": str(decoded.starknet_id),
+                            "_chain.valid_to": None,
+                        },
+                        upsert=True,
+                    )
+                    print(
+                        "- [inft equipped]",
+                        hex(decoded.contract),
+                        "inft:",
+                        decoded.inft_id,
+                        "starknet_id:",
+                        decoded.starknet_id,
+                    )
+                else:
+                    await _info.storage.delete_one(
+                        "equipped_infts",
+                        {
+                            "contract": hex(decoded.contract),
+                            "inft_id": str(decoded.inft_id),
+                            "_chain.valid_to": None,
+                        },
+                    )
+                    print(
+                        "- [inft unequipped]",
+                        hex(decoded.contract),
+                        "inft:",
+                        decoded.inft_id,
+                    )
 
             else:
                 print("error: event", event.name, "not supported")
