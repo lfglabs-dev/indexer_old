@@ -31,7 +31,7 @@ async def main():
                 name="on_inft_equipped", address=conf.starknetid_contract
             ),
             EventFilter.from_event_name(
-                name="domain_to_addr_update", address=conf.starknetid_contract
+                name="domain_to_addr_update", address=conf.naming_contract
             ),
             EventFilter.from_event_name(
                 name="addr_to_domain_update", address=conf.naming_contract
