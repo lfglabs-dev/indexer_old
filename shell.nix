@@ -13,6 +13,8 @@ in pkgs.mkShell rec {
     # dropping into the shell
     pythonPackages.venvShellHook
 
+    pkg-config
+
     # required by fastecdsa
     gmp
   ];
