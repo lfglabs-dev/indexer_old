@@ -336,7 +336,7 @@ class Listener(StarkNetIndexer):
         prev_owner = str(felt.to_int(data[arr_len + 1]))
         new_owner = str(felt.to_int(data[arr_len + 2]))
 
-        if prev_owner:
+        if prev_owner != "0":
             await info.storage.find_one_and_update(
                 "domains",
                 {
