@@ -89,7 +89,7 @@ class Listener(StarkNetIndexer):
         return IndexerConfiguration(
             filter=filter,
             starting_cursor=starknet_cursor(self.conf.starting_block),
-            finality=DataFinality.DATA_STATUS_FINALIZED,
+            finality=DataFinality.DATA_STATUS_PENDING,
         )
 
     async def handle_data(self, info: Info, block: Block):
