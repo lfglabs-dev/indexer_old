@@ -220,7 +220,7 @@ class Listener(StarkNetIndexer):
             domain += decode_felt_to_domain_string(felt.to_int(data[1 + i])) + "."
         if domain:
             domain += "stark"
-        address = data[arr_len]
+        address = data[arr_len + 1]
 
         if domain:
             await info.storage.find_one_and_update(
@@ -271,8 +271,8 @@ class Listener(StarkNetIndexer):
             domain += decode_felt_to_domain_string(felt.to_int(data[1 + i])) + "."
         if domain:
             domain += "stark"
-        owner = str(felt.to_int(data[arr_len]))
-        expiry = felt.to_int(data[arr_len + 1])
+        owner = str(felt.to_int(data[arr_len + 1]))
+        expiry = felt.to_int(data[arr_len + 2])
 
         # we want to upsert
         existing = await info.storage.find_one_and_update(
@@ -333,10 +333,10 @@ class Listener(StarkNetIndexer):
             domain += decode_felt_to_domain_string(felt.to_int(data[1 + i])) + "."
         if domain:
             domain += "stark"
-        prev_owner = str(felt.to_int(data[arr_len]))
-        new_owner = str(felt.to_int(data[arr_len + 1]))
+        prev_owner = str(felt.to_int(data[arr_len + 1]))
+        new_owner = str(felt.to_int(data[arr_len + 2]))
 
-        if prev_owner:
+        if prev_owner != "0":
             await info.storage.find_one_and_update(
                 "domains",
                 {
