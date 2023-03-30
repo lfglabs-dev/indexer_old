@@ -38,3 +38,4 @@ class TomlConfig(Config):
         self.starting_block = apibara["starting_block"]
         self.connection_string = apibara["connection_string"]
         self.apibara_stream = apibara["apibara_stream"]
+        self.token = apibara["token"]

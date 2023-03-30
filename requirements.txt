@@ -1,4 +1,4 @@
-apibara==0.6.2
+apibara==0.6.5
 starknet-py
 pymongo
 black

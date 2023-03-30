@@ -11,11 +11,12 @@ async def main():
         config=IndexerRunnerConfiguration(
             stream_url=conf.apibara_stream,
             storage_url=conf.connection_string,
+            token=conf.token
         ),
         reset_state=conf.reset_state,
     )
 
-    await runner.run(events_manager)
+    await runner.run(events_manager, ctx={"network": "starknet-mainnet"})
     print("starknetid indexer started")
 
 
