@@ -46,7 +46,12 @@ def decode_felt_to_domain_string(felt):
 
     return decoded
 
-
+def check_is_subdomain(self, contract: FieldElement):
+    if felt.to_hex(contract) == self.conf.braavos_contract:
+        return (True, "braavos")
+    else: 
+        return (False, "")
+        
 class Listener(StarkNetIndexer):
     def __init__(self, conf) -> None:
         super().__init__()
@@ -85,6 +90,12 @@ class Listener(StarkNetIndexer):
             "reset_subdomains_update",
         ]:
             add_filter(self.conf.naming_contract, starknet_id_event)
+
+        # braavos subdomain contract
+        for starknet_id_event in [
+            "domain_to_addr_update",
+        ]:
+            add_filter(self.conf.braavos_contract, starknet_id_event)
 
         return IndexerConfiguration(
             filter=filter,
@@ -214,26 +225,48 @@ class Listener(StarkNetIndexer):
     async def domain_to_addr_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
     ):
+        (is_subdomain, project) = check_is_subdomain(contract)
         arr_len = felt.to_int(data[0])
         domain = ""
         for i in range(arr_len):
             domain += decode_felt_to_domain_string(felt.to_int(data[1 + i])) + "."
         if domain:
+            if is_subdomain:
+                domain += (project + ".")
             domain += "stark"
         address = data[arr_len + 1]
 
         if domain:
-            await info.storage.find_one_and_update(
-                "domains",
-                {"domain": domain, "_chain.valid_to": None},
-                {"$set": {"addr": str(felt.to_int(address))}},
-            )
+            if is_subdomain:
+                await info.storage.insert_one(
+                    "subdomains",
+                    {
+                        "domain": domain,
+                        "project": project,
+                        "creation_date": block.header.timestamp.ToDatetime(),
+                        "_chain.valid_to": None,
+                        "addr": str(felt.to_int(address))
+                    },
+                )
+            else:
+                await info.storage.find_one_and_update(
+                    "domains",
+                    {"domain": domain, "_chain.valid_to": None},
+                    {"$set": {"addr": str(felt.to_int(address))}},
+                )
         else:
-            await info.storage.find_one_and_update(
-                "domains",
-                {"domain": domain, "_chain.valid_to": None},
-                {"$unset": {"addr": None}},
-            )
+            if is_subdomain:
+                await info.storage.find_one_and_update(
+                    "subdomains",
+                    {"domain": domain, "project": project, "_chain.valid_to": None},
+                    {"$unset": {"addr": None}},
+                )
+            else:
+                await info.storage.find_one_and_update(
+                    "domains",
+                    {"domain": domain, "_chain.valid_to": None},
+                    {"$unset": {"addr": None}},
+                )
         print("- [domain2addr]", domain, "->", felt.to_hex(address))
 
     async def addr_to_domain_update(
@@ -255,11 +288,18 @@ class Listener(StarkNetIndexer):
             {"$unset": {"rev_addr": None}},
         )
         if domain:
-            await info.storage.find_one_and_update(
-                "domains",
-                {"domain": domain, "_chain.valid_to": None},
-                {"$set": {"rev_addr": str_address}},
-            )
+            if domain.endswith(".braavos.stark"):
+                await info.storage.find_one_and_update(
+                    "subdomains",
+                    {"domain": domain, "_chain.valid_to": None},
+                    {"$set":  {"rev_addr": str_address}},
+                )
+            else:
+                await info.storage.find_one_and_update(
+                    "domains",
+                    {"domain": domain, "_chain.valid_to": None},
+                    {"$set": {"rev_addr": str_address}},
+                )
         print("- [addr2domain]", felt.to_hex(address), "->", domain)
 
     async def starknet_id_update(
