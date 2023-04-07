@@ -225,7 +225,7 @@ class Listener(StarkNetIndexer):
     async def domain_to_addr_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
     ):
-        (is_subdomain, project) = check_is_subdomain(contract)
+        (is_subdomain, project) = self.check_is_subdomain(contract)
         arr_len = felt.to_int(data[0])
         domain = ""
         for i in range(arr_len):
