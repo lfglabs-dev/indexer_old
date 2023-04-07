@@ -46,16 +46,16 @@ def decode_felt_to_domain_string(felt):
 
     return decoded
 
-def check_is_subdomain(self, contract: FieldElement):
-    if felt.to_hex(contract) == self.conf.braavos_contract:
-        return (True, "braavos")
-    else: 
-        return (False, "")
-        
 class Listener(StarkNetIndexer):
     def __init__(self, conf) -> None:
         super().__init__()
         self.conf = conf
+
+    def check_is_subdomain(self, contract: FieldElement):
+        if felt.to_hex(contract) == self.conf.braavos_contract:
+            return (True, "braavos")
+        else: 
+            return (False, "")
 
     def indexer_id(self) -> str:
         return self.conf.indexer_id
