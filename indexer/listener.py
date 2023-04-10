@@ -46,6 +46,7 @@ def decode_felt_to_domain_string(felt):
 
     return decoded
 
+
 class Listener(StarkNetIndexer):
     def __init__(self, conf) -> None:
         super().__init__()
@@ -54,7 +55,7 @@ class Listener(StarkNetIndexer):
     def check_is_subdomain(self, contract: FieldElement):
         if felt.to_hex(contract) == self.conf.braavos_contract:
             return (True, "braavos")
-        else: 
+        else:
             return (False, "")
 
     def indexer_id(self) -> str:
@@ -232,7 +233,7 @@ class Listener(StarkNetIndexer):
             domain += decode_felt_to_domain_string(felt.to_int(data[1 + i])) + "."
         if domain:
             if is_subdomain:
-                domain += (project + ".")
+                domain += project + "."
             domain += "stark"
         address = data[arr_len + 1]
 
@@ -245,7 +246,7 @@ class Listener(StarkNetIndexer):
                         "project": project,
                         "creation_date": block.header.timestamp.ToDatetime(),
                         "_chain.valid_to": None,
-                        "addr": str(felt.to_int(address))
+                        "addr": str(felt.to_int(address)),
                     },
                 )
             else:
@@ -292,7 +293,7 @@ class Listener(StarkNetIndexer):
                 await info.storage.find_one_and_update(
                     "subdomains",
                     {"domain": domain, "_chain.valid_to": None},
-                    {"$set":  {"rev_addr": str_address}},
+                    {"$set": {"rev_addr": str_address}},
                 )
             else:
                 await info.storage.find_one_and_update(
@@ -394,6 +395,7 @@ class Listener(StarkNetIndexer):
                     "addr": "0",
                     "expiry": None,
                     "token_id": new_owner,
+                    "creation_date": block.header.timestamp.ToDatetime(),
                 },
             )
 
