@@ -25,6 +25,6 @@ if __name__ == "__main__":
     while True:
         try:
             asyncio.run(main())
-        except Exception as exception:
-            traceback.print_exception(exception)
+        except Exception:
+            print(traceback.format_exc())
             print("warning: exception detected, restarting")
