@@ -246,7 +246,6 @@ class Listener(StarkNetIndexer):
                         "domain": domain,
                         "project": project,
                         "creation_date": block.header.timestamp.ToDatetime(),
-                        "_chain.valid_to": None,
                         "addr": str(felt.to_int(address)),
                     },
                 )
