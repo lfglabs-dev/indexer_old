@@ -1,3 +1,4 @@
+backups/**
 secrets
 *.shelf
 config.toml
