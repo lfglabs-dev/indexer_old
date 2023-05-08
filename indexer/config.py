@@ -32,6 +32,7 @@ class TomlConfig(Config):
         self.starknetid_contract = contract["starknetid"]
         self.naming_contract = contract["naming"]
         self.braavos_contract = contract["braavos"]
+        self.xplorer_contract = contract["xplorer"]
 
         apibara = config["apibara"]
         self.indexer_id = apibara["indexer_id"]
