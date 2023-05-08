@@ -4,9 +4,22 @@ from listener import Listener
 from apibara.indexer import IndexerRunner, IndexerRunnerConfiguration
 from config import TomlConfig
 
+def create_indexes(conf):
+    client = MongoClient(conf.connection_string)
+    db = client[conf.indexer_id]
+
+    with open("indexes.json", "r") as f:
+        collections_and_indexes = json.load(f)
+
+    for collection, indexes in collections_and_indexes.items():
+        for index in indexes:
+            db[collection].create_index(index['key'], name=index['name'])
+
+    client.close()
 
 async def main():
     conf = TomlConfig("config.toml", "config.template.toml")
+    create_indexes(conf.connection_string)
     events_manager = Listener(conf)
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
