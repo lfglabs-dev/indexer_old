@@ -56,6 +56,8 @@ class Listener(StarkNetIndexer):
     def check_is_subdomain(self, contract: FieldElement):
         if felt.to_hex(contract) == self.conf.braavos_contract:
             return (True, "braavos")
+        elif felt.to_hex(contract) == self.conf.xplorer_contract:
+            return (True, "xplorer")
         else:
             return (False, "")
 
@@ -98,6 +100,12 @@ class Listener(StarkNetIndexer):
             "domain_to_addr_update",
         ]:
             add_filter(self.conf.braavos_contract, starknet_id_event)
+
+        # xplorer subdomain contract
+        for starknet_id_event in [
+            "domain_to_addr_update",
+        ]:
+            add_filter(self.conf.xplorer_contract, starknet_id_event)
 
         return IndexerConfiguration(
             filter=filter,
@@ -289,7 +297,7 @@ class Listener(StarkNetIndexer):
             {"$unset": {"rev_addr": None}},
         )
         if domain:
-            if domain.endswith(".braavos.stark"):
+            if domain.endswith(".braavos.stark") or domain.endswith(".xplorer.stark"):
                 await info.storage.find_one_and_update(
                     "subdomains",
                     {"domain": domain, "_chain.valid_to": None},
