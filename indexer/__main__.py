@@ -20,7 +20,7 @@ def create_indexes(conf):
 
 async def main():
     conf = TomlConfig("config.toml", "config.template.toml")
-    create_indexes(conf.connection_string)
+    create_indexes(conf)
     events_manager = Listener(conf)
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
