@@ -15,7 +15,8 @@ def create_indexes(conf):
 
     for collection, indexes in collections_and_indexes.items():
         for index in indexes:
-            db[collection].create_index(index['key'], name=index['name'])
+            index_keys = [(k, v) for k, v in index['key'].items()]
+            db[collection].create_index(index_keys, name=index['name'])
 
     client.close()
 
