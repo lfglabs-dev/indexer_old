@@ -2,6 +2,7 @@ import asyncio
 import traceback
 from listener import Listener
 from apibara.indexer import IndexerRunner, IndexerRunnerConfiguration
+from pymongo import MongoClient
 from config import TomlConfig
 
 def create_indexes(conf):
