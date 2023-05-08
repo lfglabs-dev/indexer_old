@@ -4,6 +4,7 @@ from listener import Listener
 from apibara.indexer import IndexerRunner, IndexerRunnerConfiguration
 from pymongo import MongoClient
 from config import TomlConfig
+import json
 
 def create_indexes(conf):
     client = MongoClient(conf.connection_string)
