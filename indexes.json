@@ -1,0 +1,68 @@
+{
+  "domains": [
+    { "key": { "_id": 1 }, "name": "_id_" },
+    {
+      "key": { "domain": 1, "_chain.valid_to": 1 },
+      "name": "domain_1__chain.valid_to_1"
+    },
+    {
+      "key": { "rev_addr": 1, "_chain.valid_to": 1 },
+      "name": "rev_addr_1__chain.valid_to_1"
+    },
+    {
+      "key": { "domain": 1, "token_id": 1, "_chain.valid_to": 1 },
+      "name": "domain_1_token_id_1__chain.valid_to_1"
+    },
+    { "key": { "_chain.valid_to": 1 }, "name": "_chain.valid_to_1" },
+    { "key": { "_chain.valid_from": 1 }, "name": "_chain.valid_from_1" },
+    { "key": { "creation_date": -1 }, "name": "creation_date_-1" },
+    {
+      "key": { "token_id": 1, "_chain.valid_to": 1 },
+      "name": "token_id_1__chain.valid_to_1"
+    },
+    {
+      "key": { "_chain.valid_to": 1, "expiry": 1 },
+      "name": "_chain.valid_to_1_expiry_1"
+    },
+    {
+      "key": { "_chain.valid_to": 1, "addr": 1, "rev_addr": 1 },
+      "name": "_chain.valid_to_1_addr_1_rev_addr_1"
+    }
+  ],
+  "domains_renewals": [
+    { "key": { "_id": 1 }, "name": "_id_" },
+    { "key": { "_chain.valid_from": 1 }, "name": "_chain.valid_from_1" }
+  ],
+  "equipped_infts": [{ "key": { "_id": 1 }, "name": "_id_" }],
+  "starknet_ids": [
+    { "key": { "_id": 1 }, "name": "_id_" },
+    { "key": { "_chain.valid_from": 1 }, "name": "_chain.valid_from_1" },
+    {
+      "key": { "token_id": 1, "_chain.valid_to": 1 },
+      "name": "token_id_1__chain.valid_to_1"
+    },
+    { "key": { "_chain.valid_to": 1 }, "name": "_chain.valid_to_1" },
+    {
+      "key": { "owner": 1, "_chain.valid_to": 1 },
+      "name": "owner_1__chain.valid_to_1"
+    }
+  ],
+  "starknet_ids_data": [
+    { "key": { "_id": 1 }, "name": "_id_" },
+    {
+      "key": { "field": 1, "token_id": 1, "verifier": 1, "_chain.valid_to": 1 },
+      "name": "field_1_token_id_1_verifier_1__chain.valid_to_1"
+    },
+    { "key": { "_chain.valid_to": 1 }, "name": "_chain.valid_to_1" },
+    { "key": { "_chain.valid_from": 1 }, "name": "_chain.valid_from_1" }
+  ],
+  "subdomains": [
+    { "key": { "_id": 1 }, "name": "_id_" },
+    {
+      "key": { "domain": 1, "_chain.valid_to": 1 },
+      "name": "domain_1__chain.valid_to_1"
+    },
+    { "key": { "_chain.valid_from": 1 }, "name": "_chain.valid_from_1" },
+    { "key": { "_chain.valid_to": 1 }, "name": "_chain.valid_to_1" }
+  ]
+}
