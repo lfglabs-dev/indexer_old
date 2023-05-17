@@ -54,9 +54,9 @@ class Listener(StarkNetIndexer):
         self.handle_pending_data = self.handle_data
 
     def check_is_subdomain(self, contract: FieldElement):
-        if felt.to_hex(contract) == self.conf.braavos_contract:
+        if felt.to_int(contract) == int(self.conf.braavos_contract, 16):
             return (True, "braavos")
-        elif felt.to_hex(contract) == self.conf.xplorer_contract:
+        elif felt.to_int(contract) == int(self.conf.xplorer_contract, 16):
             return (True, "xplorer")
         else:
             return (False, "")
