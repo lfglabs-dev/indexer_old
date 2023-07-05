@@ -24,11 +24,13 @@ async def main():
     conf = TomlConfig("config.toml", "config.template.toml")
     create_indexes(conf)
     events_manager = Listener(conf)
+    enable_ssl = False if conf.is_devnet is True else True
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
             stream_url=conf.apibara_stream,
             storage_url=conf.connection_string,
-            token=conf.token
+            token=conf.token,
+            stream_ssl=enable_ssl,
         ),
         reset_state=conf.reset_state,
     )

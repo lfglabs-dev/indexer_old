@@ -33,6 +33,7 @@ class TomlConfig(Config):
         self.naming_contract = contract["naming"]
         self.braavos_contract = contract["braavos"]
         self.xplorer_contract = contract["xplorer"]
+        self.referral_contract = contract["referral"]
 
         apibara = config["apibara"]
         self.indexer_id = apibara["indexer_id"]
@@ -41,3 +42,4 @@ class TomlConfig(Config):
         self.connection_string = apibara["connection_string"]
         self.apibara_stream = apibara["apibara_stream"]
         self.token = apibara["token"]
+        self.is_devnet = apibara["is_devnet"]
