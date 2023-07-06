@@ -107,10 +107,17 @@ class Listener(StarkNetIndexer):
         ]:
             add_filter(self.conf.xplorer_contract, starknet_id_event)
 
+        # referral contract
+        for starknet_id_event in [
+            "on_claim",
+            "on_commission",
+        ]:
+            add_filter(self.conf.referral_contract, starknet_id_event)
+
         return IndexerConfiguration(
             filter=filter,
             starting_cursor=starknet_cursor(self.conf.starting_block),
-            finality=DataFinality.DATA_STATUS_PENDING,
+            finality=DataFinality.DATA_STATUS_ACCEPTED if self.conf.is_devnet is True else DataFinality.DATA_STATUS_PENDING,
         )
 
     async def handle_data(self, info: Info, block: Block):
@@ -129,6 +136,8 @@ class Listener(StarkNetIndexer):
                 "starknet_id_update": self.starknet_id_update,
                 "domain_transfer": self.domain_transfer,
                 "reset_subdomains_update": self.reset_subdomains_update,
+                "on_claim": self.referral_on_claim,
+                "on_commission": self.referral_on_commission,
             }[event_name](info, block, event.from_address, event.data)
 
     async def on_starknet_id_transfer(
@@ -430,3 +439,52 @@ class Listener(StarkNetIndexer):
             {"domain": {"$regex": ".*\." + domain.replace(".", "\.")}},
         )
         print("- [reset_subdomains]", domain)
+    
+    async def referral_on_commission(
+        self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
+    ):
+        amount = felt.to_int(data[1]) + (felt.to_int(data[2]) << 128)
+        sponsor_addr = str(felt.to_int(data[3]))
+
+        await info.storage.insert_one(
+            "referral_revenues",
+            {
+                "timestamp": block.header.timestamp.ToDatetime(),
+                "sponsor_addr": sponsor_addr,
+                "amount": amount,
+            },
+        )
+        print(
+            "- [add_commission]",
+            "sponsor_addr:",
+            sponsor_addr,
+            "amount:",
+            amount,
+            "timestamp:",
+            block.header.timestamp.ToDatetime(),
+        )
+
+
+    async def referral_on_claim(
+        self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
+    ):
+        amount = felt.to_int(data[1]) + (felt.to_int(data[2]) << 128)
+        sponsor_addr = str(felt.to_int(data[3]))
+
+        await info.storage.insert_one(
+            "referral_revenues",
+            {
+                "timestamp": block.header.timestamp.ToDatetime(),
+                "sponsor_addr": sponsor_addr,
+                "amount": -amount,
+            },
+        )
+        print(
+            "- [on_claim]",
+            "sponsor_addr:",
+            sponsor_addr,
+            "amount:",
+            -amount,
+            "timestamp:",
+            block.header.timestamp.ToDatetime(),
+        )
