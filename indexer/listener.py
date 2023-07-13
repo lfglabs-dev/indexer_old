@@ -257,15 +257,26 @@ class Listener(StarkNetIndexer):
 
         if domain:
             if is_subdomain:
-                await info.storage.insert_one(
+                existing = await info.storage.find_one_and_update(
                     "subdomains",
+                    {"domain": domain, "_chain.valid_to": None},
                     {
-                        "domain": domain,
-                        "project": project,
-                        "creation_date": block.header.timestamp.ToDatetime(),
-                        "addr": str(felt.to_int(address)),
+                        "$set": {
+                            "project": project,
+                            "addr": str(felt.to_int(address)),
+                        }
                     },
                 )
+                if existing is None:
+                    await info.storage.insert_one(
+                        "subdomains",
+                        {
+                            "domain": domain,
+                            "project": project,
+                            "creation_date": block.header.timestamp.ToDatetime(),
+                            "addr": str(felt.to_int(address)),
+                        },
+                    )
             else:
                 await info.storage.find_one_and_update(
                     "domains",
