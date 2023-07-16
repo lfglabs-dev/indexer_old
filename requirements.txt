@@ -1,5 +1,6 @@
 apibara==0.6.6
 starknet-py
+requests
 pymongo
 black
 toml

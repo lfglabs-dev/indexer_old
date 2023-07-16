@@ -43,3 +43,13 @@ class TomlConfig(Config):
         self.apibara_stream = apibara["apibara_stream"]
         self.token = apibara["token"]
         self.is_devnet = apibara["is_devnet"]
+
+        watchtower = config["watchtower"]
+        self.watchtower_endpoint = watchtower["endpoint"]
+        self.watchtower_app_id = watchtower["app_id"]
+        self.watchtower_token = watchtower["token"]
+
+        watchtower_types = config["watchtower"]["types"]
+        self.watchtower_info = watchtower_types["info"]
+        self.watchtower_warning = watchtower_types["warning"]
+        self.watchtower_severe = watchtower_types["severe"]
