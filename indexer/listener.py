@@ -48,9 +48,10 @@ def decode_felt_to_domain_string(felt):
 
 
 class Listener(StarkNetIndexer):
-    def __init__(self, conf) -> None:
+    def __init__(self, conf, logger) -> None:
         super().__init__()
         self.conf = conf
+        self.logger = logger
         self.handle_pending_data = self.handle_data
 
     def check_is_subdomain(self, contract: FieldElement):
@@ -117,7 +118,9 @@ class Listener(StarkNetIndexer):
         return IndexerConfiguration(
             filter=filter,
             starting_cursor=starknet_cursor(self.conf.starting_block),
-            finality=DataFinality.DATA_STATUS_ACCEPTED if self.conf.is_devnet is True else DataFinality.DATA_STATUS_PENDING,
+            finality=DataFinality.DATA_STATUS_ACCEPTED
+            if self.conf.is_devnet is True
+            else DataFinality.DATA_STATUS_PENDING,
         )
 
     async def handle_data(self, info: Info, block: Block):
@@ -164,7 +167,7 @@ class Listener(StarkNetIndexer):
                 },
             )
 
-        print("- [transfer]", token_id, source, "->", target)
+        self.logger.local("- [transfer] %s %s -> %s" % (token_id, source, target))
 
     async def on_verifier_data_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
@@ -192,7 +195,7 @@ class Listener(StarkNetIndexer):
             upsert=True,
         )
         key = field + ":" + verifier_data + ":" + felt.to_hex(verifier_felt)
-        print("- [data_update]", token_id, "->", key)
+        self.logger.local("- [data_update] %s -> %s" % (token_id, key))
 
     async def on_inft_equipped(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
@@ -217,14 +220,11 @@ class Listener(StarkNetIndexer):
                 },
                 upsert=True,
             )
-            print(
-                "- [inft equipped]",
-                contract,
-                "inft:",
-                inft_id,
-                "starknet_id:",
-                starknet_id,
+            self.logger.local(
+                "- [inft equipped] %s inft: %s starknet_id: %s"
+                % (contract, inft_id, starknet_id)
             )
+
         else:
             await info.storage.delete_one(
                 "equipped_infts",
@@ -234,12 +234,7 @@ class Listener(StarkNetIndexer):
                     "_chain.valid_to": None,
                 },
             )
-            print(
-                "- [inft unequipped]",
-                contract,
-                "inft:",
-                inft_id,
-            )
+            self.logger.local("- [inft unequipped] %s inft: %s" % (contract, inft_id))
 
     async def domain_to_addr_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
@@ -296,7 +291,7 @@ class Listener(StarkNetIndexer):
                     {"domain": domain, "_chain.valid_to": None},
                     {"$unset": {"addr": None}},
                 )
-        print("- [domain2addr]", domain, "->", felt.to_hex(address))
+        self.logger.local("- [domain2addr] %s -> %s" % (domain, felt.to_hex(address)))
 
     async def addr_to_domain_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
@@ -329,7 +324,7 @@ class Listener(StarkNetIndexer):
                     {"domain": domain, "_chain.valid_to": None},
                     {"$set": {"rev_addr": str_address}},
                 )
-        print("- [addr2domain]", felt.to_hex(address), "->", domain)
+        self.logger.local("- [addr2domain] %s -> %s" % (felt.to_hex(address), domain))
 
     async def starknet_id_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
@@ -365,13 +360,7 @@ class Listener(StarkNetIndexer):
                     "creation_date": block.header.timestamp.ToDatetime(),
                 },
             )
-            print(
-                "- [purchased]",
-                "domain:",
-                domain,
-                "id:",
-                owner,
-            )
+            self.logger.local("- [purchased] domain: %s id: %s" % (domain, owner))
         else:
             await info.storage.insert_one(
                 "domains_renewals",
@@ -382,15 +371,9 @@ class Listener(StarkNetIndexer):
                     "renewal_date": block.header.timestamp.ToDatetime(),
                 },
             )
-            print(
-                "- [renewed]",
-                "domain:",
-                domain,
-                "id:",
-                owner,
-                "time:",
-                (expiry - int(existing["expiry"])) / 86400,
-                "days",
+            self.logger.local(
+                "- [renewed] domain: %s id: %s time: %s days"
+                % (domain, owner, (expiry - int(existing["expiry"])) / 86400)
             )
 
     async def domain_transfer(
@@ -427,12 +410,8 @@ class Listener(StarkNetIndexer):
                 },
             )
 
-        print(
-            "- [domain_transfer]",
-            domain,
-            prev_owner,
-            "->",
-            new_owner,
+        self.logger.local(
+            "- [domain_transfer] %s %s -> %s" % (domain, prev_owner, new_owner)
         )
 
     async def reset_subdomains_update(
@@ -449,8 +428,8 @@ class Listener(StarkNetIndexer):
             "domains",
             {"domain": {"$regex": ".*\." + domain.replace(".", "\.")}},
         )
-        print("- [reset_subdomains]", domain)
-    
+        self.logger.local("- [reset_subdomains] %s" % domain)
+
     async def referral_on_commission(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
     ):
@@ -465,16 +444,10 @@ class Listener(StarkNetIndexer):
                 "amount": amount,
             },
         )
-        print(
-            "- [add_commission]",
-            "sponsor_addr:",
-            sponsor_addr,
-            "amount:",
-            amount,
-            "timestamp:",
-            block.header.timestamp.ToDatetime(),
+        self.logger.local(
+            "- [add_commission] sponsor_addr: %s amount: %s timestamp: %s"
+            % (sponsor_addr, amount, block.header.timestamp.ToDatetime())
         )
-
 
     async def referral_on_claim(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
@@ -490,12 +463,7 @@ class Listener(StarkNetIndexer):
                 "amount": -amount,
             },
         )
-        print(
-            "- [on_claim]",
-            "sponsor_addr:",
-            sponsor_addr,
-            "amount:",
-            -amount,
-            "timestamp:",
-            block.header.timestamp.ToDatetime(),
+        self.logger.local(
+            "- [on_claim] sponsor_addr: %s amount: %s timestamp: %s"
+            % (sponsor_addr, -amount, block.header.timestamp.ToDatetime())
         )

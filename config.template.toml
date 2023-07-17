@@ -16,3 +16,12 @@ connection_string = "mongodb://apibara:apibara@mongo:27017"
 apibara_stream = "goerli.starknet.a5a.ch:443"
 token="XXXXXXXXXXXXXXXXX"
 is_devnet = false
+
+[watchtower]
+endpoint = "https://api.watchtower.starknet.id/service/add_message"
+app_id = "XXXXXXXXXXXXXXXXX"
+token = "XXXXXXXXXXXXXXXXX"
+[watchtower.types]
+info = "goerli/info"
+warning = "goerli/warning"
+severe = "goerli/severe"

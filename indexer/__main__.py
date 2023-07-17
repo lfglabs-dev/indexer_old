@@ -5,6 +5,8 @@ from apibara.indexer import IndexerRunner, IndexerRunnerConfiguration
 from pymongo import MongoClient
 from config import TomlConfig
 import json
+from logger import Logger
+
 
 def create_indexes(conf):
     client = MongoClient(conf.connection_string)
@@ -15,16 +17,18 @@ def create_indexes(conf):
 
     for collection, indexes in collections_and_indexes.items():
         for index in indexes:
-            index_keys = [(k, v) for k, v in index['key'].items()]
-            db[collection].create_index(index_keys, name=index['name'])
+            index_keys = [(k, v) for k, v in index["key"].items()]
+            db[collection].create_index(index_keys, name=index["name"])
 
     client.close()
 
+
 async def main():
     conf = TomlConfig("config.toml", "config.template.toml")
+    logger = Logger(conf)
     create_indexes(conf)
-    events_manager = Listener(conf)
-    enable_ssl = False if conf.is_devnet is True else True
+    events_manager = Listener(conf, logger)
+    enable_ssl = not conf.is_devnet
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
             stream_url=conf.apibara_stream,
@@ -34,15 +38,21 @@ async def main():
         ),
         reset_state=conf.reset_state,
     )
-
+    logger.info("starting starknetid indexer")
     await runner.run(events_manager, ctx={"network": "starknet-mainnet"})
-    print("starknetid indexer started")
 
 
 if __name__ == "__main__":
     while True:
         try:
             asyncio.run(main())
-        except Exception:
-            print(traceback.format_exc())
-            print("warning: exception detected, restarting")
+        except Exception as e:
+            conf = TomlConfig(
+                "config.toml", "config.template.toml"
+            )  # create a new config object
+            logger = Logger(conf)  # create an instance of Logger
+            exception_traceback = traceback.format_exc()  # get the traceback
+            print(exception_traceback)  # print it locally
+            logger.warning(
+                f"warning: {type(e).__name__} detected, restarting"
+            )  # only send the exception type to the server
