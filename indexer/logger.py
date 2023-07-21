@@ -44,4 +44,4 @@ class Logger:
         self.post_log("severe", message)
 
     def local(self, message):
-        print("LOCAL: ", message)
+        print(message)
