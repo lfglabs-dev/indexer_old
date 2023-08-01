@@ -78,42 +78,43 @@ class Listener(StarkNetIndexer):
                 .with_keys([felt.from_int(selector)])
             )
 
-        # starknet_id contract
-        for starknet_id_event in [
-            "Transfer",
-            "VerifierDataUpdate",
-            "on_inft_equipped",
-        ]:
-            add_filter(self.conf.starknetid_contract, starknet_id_event)
+        # # starknet_id contract
+        # for starknet_id_event in [
+        #     "Transfer",
+        #     "VerifierDataUpdate",
+        #     "on_inft_equipped",
+        # ]:
+        #     add_filter(self.conf.starknetid_contract, starknet_id_event)
 
         # naming contract
         for starknet_id_event in [
-            "domain_to_addr_update",
-            "addr_to_domain_update",
-            "starknet_id_update",
-            "domain_transfer",
-            "reset_subdomains_update",
+            # "domain_to_addr_update",
+            # "addr_to_domain_update",
+            # "starknet_id_update",
+            # "domain_transfer",
+            # "reset_subdomains_update",
+            "domain_to_resolver_update",
         ]:
             add_filter(self.conf.naming_contract, starknet_id_event)
 
-        # braavos subdomain contract
-        for starknet_id_event in [
-            "domain_to_addr_update",
-        ]:
-            add_filter(self.conf.braavos_contract, starknet_id_event)
+        # # braavos subdomain contract
+        # for starknet_id_event in [
+        #     "domain_to_addr_update",
+        # ]:
+        #     add_filter(self.conf.braavos_contract, starknet_id_event)
 
-        # xplorer subdomain contract
-        for starknet_id_event in [
-            "domain_to_addr_update",
-        ]:
-            add_filter(self.conf.xplorer_contract, starknet_id_event)
+        # # xplorer subdomain contract
+        # for starknet_id_event in [
+        #     "domain_to_addr_update",
+        # ]:
+        #     add_filter(self.conf.xplorer_contract, starknet_id_event)
 
-        # referral contract
-        for starknet_id_event in [
-            "on_claim",
-            "on_commission",
-        ]:
-            add_filter(self.conf.referral_contract, starknet_id_event)
+        # # referral contract
+        # for starknet_id_event in [
+        #     "on_claim",
+        #     "on_commission",
+        # ]:
+        #     add_filter(self.conf.referral_contract, starknet_id_event)
 
         return IndexerConfiguration(
             filter=filter,
@@ -131,16 +132,17 @@ class Listener(StarkNetIndexer):
             event_name = self.event_map[felt.to_int(event.keys[0])]
 
             await {
-                "Transfer": self.on_starknet_id_transfer,
-                "VerifierDataUpdate": self.on_verifier_data_update,
-                "on_inft_equipped": self.on_inft_equipped,
-                "domain_to_addr_update": self.domain_to_addr_update,
-                "addr_to_domain_update": self.addr_to_domain_update,
-                "starknet_id_update": self.starknet_id_update,
-                "domain_transfer": self.domain_transfer,
-                "reset_subdomains_update": self.reset_subdomains_update,
-                "on_claim": self.referral_on_claim,
-                "on_commission": self.referral_on_commission,
+                # "Transfer": self.on_starknet_id_transfer,
+                # "VerifierDataUpdate": self.on_verifier_data_update,
+                # "on_inft_equipped": self.on_inft_equipped,
+                # "domain_to_addr_update": self.domain_to_addr_update,
+                # "addr_to_domain_update": self.addr_to_domain_update,
+                "domain_to_resolver_update": self.domain_to_resolver_update,
+                # "starknet_id_update": self.starknet_id_update,
+                # "domain_transfer": self.domain_transfer,
+                # "reset_subdomains_update": self.reset_subdomains_update,
+                # "on_claim": self.referral_on_claim,
+                # "on_commission": self.referral_on_commission,
             }[event_name](info, block, event.from_address, event.data)
 
     async def on_starknet_id_transfer(
@@ -292,6 +294,43 @@ class Listener(StarkNetIndexer):
                     {"$unset": {"addr": None}},
                 )
         self.logger.local("- [domain2addr] %s -> %s" % (domain, felt.to_hex(address)))
+
+    async def domain_to_resolver_update(
+        self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
+    ):
+        arr_len = felt.to_int(data[0])
+        domain = ""
+        for i in range(arr_len):
+            domain += decode_felt_to_domain_string(felt.to_int(data[1 + i])) + "."
+        if domain:
+            domain += "stark"
+        resolver = felt.to_int(data[arr_len + 1])
+        if resolver == 0:
+            await info.storage.delete_one(
+                "custom_resolving",
+                {"domain": domain, "_chain.valid_to": None},
+            )
+        else:
+            existing = await info.storage.find_one_and_update(
+                "custom_resolving",
+                {"domain": domain, "_chain.valid_to": None},
+                {
+                    "$set": {
+                        "domain": domain,
+                        "resolver": str(resolver),
+                    }
+                },
+            )
+            if existing is None:
+                await info.storage.insert_one(
+                    "custom_resolving",
+                    {
+                        "domain": domain,
+                        "resolver": str(resolver),
+                    },
+                )
+
+        self.logger.local("- [domain2resolver] %s -> %s" % (domain, hex(resolver)))
 
     async def addr_to_domain_update(
         self, info: Info, block: Block, contract: FieldElement, data: List[FieldElement]
