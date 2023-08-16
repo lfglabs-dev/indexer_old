@@ -184,6 +184,7 @@ class Listener(StarkNetIndexer):
                 "token_id": token_id,
                 "verifier": verifier,
                 "field": field,
+                "_chain.valid_to": None,
             },
             {
                 "token_id": token_id,
